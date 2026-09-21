@@ -1,0 +1,55 @@
+name: rental-foundation
+x-app: &app
+  image: rental-foundation-app
+  build:
+    context: .
+    dockerfile: docker/Dockerfile
+  user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+  working_dir: /var/www/html
+  volumes:
+    - ./src:/var/www/html:z
+  environment:
+    DB_CONNECTION: pgsql
+    DB_HOST: db
+    DB_PORT: 5432
+    DB_DATABASE: rental
+    DB_USERNAME: rental
+    DB_PASSWORD: local-development-only
+  depends_on:
+    db:
+      condition: service_healthy
+services:
+  app:
+    <<: *app
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:8000"
+  worker:
+    <<: *app
+    command: php artisan queue:work --tries=3 --timeout=90
+  scheduler:
+    <<: *app
+    command: php artisan schedule:work
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: rental
+      POSTGRES_USER: rental
+      POSTGRES_PASSWORD: local-development-only
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rental -d rental"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  node:
+    image: node:22-bookworm-slim
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    working_dir: /app
+    volumes:
+      - ./src:/app:z
+    environment:
+      npm_config_cache: /tmp/npm
+    profiles: [tools]
+volumes:
+  postgres-data:

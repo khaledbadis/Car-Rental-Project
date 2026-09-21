@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+export LOCAL_UID="$(id -u)" LOCAL_GID="$(id -g)"
+[ -f src/.env ] || cp src/.env.example src/.env
+docker compose build app
+docker compose run --rm app composer install --no-interaction
+if ! grep -q '^APP_KEY=base64:' src/.env; then
+  docker compose run --rm app php artisan key:generate --no-interaction
+fi
+docker compose run --rm app php artisan migrate --force
+docker compose run --rm node npm ci
+docker compose run --rm node npm run build
+docker compose up -d app worker scheduler

@@ -1,0 +1,336 @@
+1. Agent price / discount / cancellation permissions; fleet/block permissions
+
+For Rental Agents, I want normal day-to-day operations without giving them unrestricted commercial control.
+
+They may use the vehicle's configured standard rates without approval. They may apply a discount of up to 10% from the calculated rental price. Anything above 10% is Manager-only.
+
+They may not arbitrarily change the vehicle's configured default daily/weekly/monthly rates. Those are fleet configuration and should be Manager-only.
+
+For reservations, Rental Agents may cancel a reservation, but they must enter a mandatory reason. If money has already been collected and the cancellation requires a refund or retained cancellation charge, the financial action must be done by the Manager or Cashier/Finance role.
+
+Rental Agents may create ordinary operational blocks such as cleaning, inspection, temporary unavailability, or customer-return preparation, but they may not edit core vehicle data, archive vehicles, configure rates, or override mandatory-document restrictions.
+
+So I'd settle the permissions as:
+
+Manager: unrestricted operational control.
+Rental Agent: reservation/rental operations, ≤10% discounts, reservation cancellation with reason, ordinary operational blocks.
+Cashier/Finance: financial operations but no fleet/reservation administration unless separately granted.
+
+Your current conservative matrix is therefore mostly correct, but Rental Agent cancellation and limited discounts can now be enabled. The existing permission structure is documented around the roles section.
+
+2. Partial-day rounding; discount scope; weekly/monthly rules
+
+For daily pricing, use:
+
+ceil(planned rental duration / 24 hours)
+
+with a minimum of one day.
+
+Examples:
+
+10:00 Monday → 10:00 Tuesday = 1 day
+10:00 Monday → 14:00 Tuesday = 2 days
+10:00 → 15:00 same day = 1 day
+
+The one-hour late grace period only applies to the actual return, not to calculating the originally agreed rental price. That keeps operational overdue and billing grace separate, which your spec already correctly does.
+
+For discounts, apply the discount to the base rental charge only. Do not discount damage, fuel, late-return, excess-mileage, towing, or similar additional charges.
+
+Allow either:
+
+percentage discount; or
+fixed-amount discount
+
+but not both on the same rental.
+
+For optional rates:
+
+Week = 7 × 24 hours
+Month = 30 × 24 hours
+
+Staff explicitly choose Daily, Weekly, or Monthly pricing. Do not automatically calculate the cheapest combination.
+
+For V1, I don't want combinations such as:
+
+1 month + 2 weeks + 3 days
+
+using some pricing optimizer.
+
+If Weekly is selected, the quantity is whole weeks. Any additional period is either negotiated into the agreed price manually by an authorized user or the rental uses Daily pricing instead.
+
+Same idea for Monthly.
+
+That matches the intentionally simple pricing approach already described in §4.5.
+
+3. Identity/licence fields, scans, expiry, company/driver requirements
+
+For an individual customer, require:
+
+full name
+date of birth
+phone number
+address
+identity-document type
+identity-document number
+identity-document issue/expiry date when applicable
+driver's licence number
+licence issue date
+licence expiry date
+licence issuing country
+uploaded ID scan/photo
+uploaded licence scan/photo
+
+Before handover, both the identity document and driver's licence must exist in the system.
+
+For the licence, an expired licence must block handover. Manager override should not be allowed for an expired driver's licence because that's a customer eligibility issue rather than an internal fleet-policy exception.
+
+For identity documents, expiration should also block handover when that document type has an expiry date.
+
+For a company customer, keep V1 intentionally basic:
+
+Company:
+
+legal/company name
+phone
+address
+registration/tax identifier if supplied
+contact person
+
+Actual driver:
+
+same personal and licence requirements as an individual renter
+
+The contract can identify the company as renter while recording the actual driver separately.
+
+That fits the basic company handling already scoped in the customer section.
+
+4. Vehicle-document expiry during a future rental; no-shows
+
+If a mandatory vehicle document is valid at pickup but is known to expire before the planned return, the system should treat the vehicle as ineligible for confirmation.
+
+For example:
+
+Insurance expires: 24 September
+Requested rental: 22–27 September
+
+The employee should not normally confirm that car.
+
+The Manager may override this only with a mandatory recorded reason, consistent with the existing document-override rule.
+
+That is stricter than only checking expiration at handover, but I prefer it because the expiry is already known at reservation time. Your spec currently leaves precisely this case open.
+
+For no-shows, do not automatically release reservations based on a background timer.
+
+After the pickup time passes, change/display the reservation as:
+
+Pickup overdue / awaiting action
+
+After a configurable 2-hour no-show grace period, highlight it strongly.
+
+An employee must then explicitly choose:
+
+customer arrived late → continue;
+reschedule;
+cancel as no-show.
+
+Cancellation requires a reason.
+
+Once cancelled, the vehicle's future commitment is released.
+
+This preserves history and avoids the system freeing a car automatically when the customer may simply be late.
+
+5. Payment methods, receipt numbering, refunds and voids
+
+For V1 support these payment methods:
+
+Cash
+Bank transfer
+CIB / Edahabia / electronic terminal payment
+Cheque
+Other
+
+For non-cash payments, allow an optional reference field.
+
+For receipts, use a readable sequential format such as:
+
+REC-2026-000001
+
+The sequence should not restart monthly. A new yearly sequence is fine.
+
+Refund receipts can use:
+
+REF-2026-000001
+
+I'd keep deposit receipts within the normal receipt system but clearly label the transaction type as Security deposit received, rather than creating yet another numbering series.
+
+A void/reversal means an entered financial transaction was wrong and is being neutralized.
+
+Example:
+
+Employee accidentally records 30,000 DA instead of 3,000 DA.
+
+The original entry remains visible, and a reversing entry corrects it.
+
+A refund means valid money was actually collected and subsequently returned to the customer.
+
+Example:
+
+20,000 DA reservation advance received correctly, reservation later cancelled, 20,000 DA returned.
+
+Those should remain distinct concepts in the database and UI.
+
+Hard deletion of posted payments remains forbidden, as already required by the financial section.
+
+6. Contract template, receipt wording, legal details, signatures
+
+For the project, assume the agency will provide its current French/Arabic paper rental contract before Phase 5.
+
+You should not design the legal contract wording yourself during earlier phases.
+
+The agency will provide:
+
+legal business name
+address
+phone numbers
+tax/business identifiers
+logo
+legal wording
+rental conditions
+existing contract numbering convention, if any
+
+For V1, contracts should support physical signatures.
+
+So the workflow is:
+
+generate PDF/print → customer and employee sign physically.
+
+No electronic-signature system is required.
+
+The printed contract should contain signature areas for:
+
+customer/driver
+agency representative
+
+Inspection/handover documentation may also have an acknowledgement/signature area if present in the supplied contract.
+
+Receipts do not need customer signatures by default.
+
+This stays aligned with Phase 5 requiring a client-approved bilingual template rather than inventing legal wording during implementation.
+
+7. Migration, deposits, and cutover
+
+We'll provide cleaned Excel exports for:
+
+vehicles
+customers
+upcoming reservations
+active rentals
+outstanding customer balances
+deposits currently held
+
+Historical rentals are optional.
+
+For active deposits, migration must include the exact remaining held amount, not merely the original deposit amount.
+
+Before cutover, perform at least one dry-run import and provide reconciliation totals.
+
+For the actual switch, I want a clear freeze process:
+
+Day before / agreed cutover time: legacy Excel becomes read-only.
+
+Any business performed between the final export and application launch must either be:
+
+entered into the new system before opening; or
+recorded on paper and entered immediately afterward with the original business timestamp.
+
+After final reconciliation, the new platform becomes the only system of record.
+
+This matches the migration controls already defined in §7.
+
+8. Retention, deletion, storage, backup and recovery
+
+Customer/rental/business records with financial or contractual history should not be hard-deleted during normal operations.
+
+Archive them instead.
+
+Uploaded customer documents can be removed only by a Manager and the removal must be audited.
+
+For this portfolio project, use a retention-policy setting/documented policy rather than trying to build an automated regulatory-retention engine.
+
+For operational storage, assume enough capacity for several years of scans and inspection photos. Put reasonable upload limits in place rather than permitting unrestricted original-size media.
+
+For example:
+
+documents: 10 MB per file
+inspection photos: 10 MB per image
+configurable limits
+
+For backup targets, I accept the proposed:
+
+RPO ≤ 24 hours
+RTO ≤ 4 hours
+
+But I'd prefer automated database backups daily at minimum, with attachments backed up alongside them to a separate storage location.
+
+A launch is not accepted until an actual restore test succeeds, as the deployment section already requires.
+
+9. VM, domain, email and Flux
+
+These are mostly technical-owner decisions rather than client business rules.
+
+From the client's side:
+
+The application will have a proper domain/subdomain such as:
+
+gestion.example.dz
+
+or whatever company domain is available.
+
+HTTPS is mandatory.
+
+Email is not required for the initial workflow. We aren't sending customer reservation confirmations or invoices by email in V1. Therefore don't make SMTP/email infrastructure a Phase 1 blocker.
+
+If later you want password-reset email or notifications, add SMTP then.
+
+VM sizing should be determined by you based on the expected scale already specified: roughly 40–50 vehicles and only 3–5 normal concurrent users.
+
+Flux licensing/access is likewise your implementation responsibility. If the chosen Flux components require a paid licence, that needs to be settled before committing the UI to those licensed components.
+
+10. Utilization denominator and revenue allocation
+
+For vehicle utilization, I want the metric to answer:
+
+Of the time this vehicle could reasonably have generated rental revenue, how much was it actually rented?
+
+Therefore:
+
+Utilization = actual rented hours / eligible hours
+
+Exclude from eligible hours:
+
+scheduled maintenance
+breakdown/indefinite maintenance
+administrative vehicle blocks
+periods before vehicle entered service
+periods after vehicle was archived/removed from service
+
+Do not exclude:
+
+time sitting available with no customer
+preparation/cleaning time between ordinary rentals
+
+Preparation is part of the operational cost of renting vehicles, so excluding it would artificially improve utilization.
+
+For revenue reporting, use the rental period rather than payment date.
+
+However, I don't need accounting-grade accrual allocation.
+
+For V1/later management reporting, attribute the rental's base revenue and related rental charges to the rental start date.
+
+Separately report cash collections based on payment date.
+
+So:
+
+Revenue ≠ money collected.
+
+That distinction is already anticipated by the spec.

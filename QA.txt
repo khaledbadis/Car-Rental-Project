@@ -1,0 +1,257 @@
+Agency structure and access
+
+For now, assume one physical agency location. We have around 6–8 employees, but normally only 3–5 would be using the application at the same time.
+
+The manager absolutely needs to access the system from outside the office, so I expect it to be a normal web application accessible securely over the Internet.
+
+I don't think we need offline operation for V1. If the Internet connection goes down temporarily, employees can fall back to paper and enter the information afterward. Building proper offline synchronization sounds like unnecessary complexity at this stage.
+
+Language, currency and regional settings
+
+The main interface should be French.
+
+That's what our employees are most comfortable using professionally.
+
+For printed customer documents, especially contracts, I'd like the possibility of having French and Arabic, but that doesn't necessarily need to be dynamic multilingual content everywhere. If the rental contract template itself contains both languages, that's sufficient initially.
+
+We can assume:
+
+Currency: Algerian dinar (DZD)
+Timezone: Algeria
+Distance: kilometres
+Fuel: litres / percentage where appropriate
+
+Amounts should normally display like 8 000 DA.
+
+Vehicle assignment and category reservations
+
+For V1, let's simplify this.
+
+A customer can request a category such as:
+
+Economique automatique
+
+but before the reservation becomes confirmed, the employee must assign a specific vehicle.
+
+So I imagine something like:
+
+Inquiry / tentative reservation → category requested → employee selects available vehicle → reservation confirmed.
+
+Once confirmed, the reservation belongs to that specific car.
+
+I don't want confirmed reservations floating around without vehicles because then we might accidentally promise more cars than we actually have.
+
+Later we could build proper fleet allocation by category, but not now.
+
+Pickup times, return times and conflicts
+
+Yes, reservations should use exact date and time.
+
+For example:
+
+Pickup: 20/09/2026 — 09:00
+Expected return: 23/09/2026 — 18:00
+
+We do need some preparation time between rentals because the car has to be inspected and cleaned.
+
+Let's make this configurable. Maybe the default is 2 hours after a return before the vehicle can be rented again.
+
+If a customer is overdue or asks to extend a rental and that extension conflicts with the next reservation, the system must warn the employee very clearly.
+
+But don't automatically cancel anything.
+
+Something like:
+
+Extension impossible without conflict resolution. Peugeot 208 is reserved for another customer on 24/09/2026 at 10:00.
+
+The employee then needs to either reject the extension, contact the next customer, or assign them another vehicle.
+
+The system should help us identify the problem, not make the business decision for us.
+
+Pricing
+
+We mostly price rentals by rental day, but operationally I think using 24-hour periods from pickup time makes the most sense.
+
+If someone picks up Monday at 10:00 and returns Tuesday at 10:00, that's one day.
+
+We should also have a configurable grace period. Let's say one hour by default.
+
+After that, the employee can add a late-return charge.
+
+For V1, I want pricing to stay relatively simple.
+
+Each vehicle should have a default daily rate.
+
+We sometimes negotiate prices, though, especially for longer rentals. So employees with permission should be able to override the price.
+
+I'd like optional:
+
+daily rate
+weekly rate
+monthly rate
+discount amount or percentage
+
+Mileage limits can exist, but let's keep them basic. A rental could specify either unlimited kilometres or a kilometre allowance. If the customer exceeds it, staff manually enter the extra charge.
+
+And yes, late fees, fuel charges and damage charges should all be entered manually for V1.
+
+I don't want you spending half the project building an automatic pricing engine.
+
+Deposits, payments and outstanding balances
+
+Most security deposits are cash deposits.
+
+Let's treat them separately from rental revenue.
+
+For example:
+
+Rental total: 32,000 DA
+Paid toward rental: 20,000 DA
+Remaining: 12,000 DA
+Security deposit: 30,000 DA
+
+When the vehicle returns normally, we refund the 30,000 DA deposit.
+
+If there are additional charges, we can use part of the deposit toward them.
+
+For example, suppose there is 5,000 DA of damage.
+
+The employee could record:
+
+Deposit received: 30,000 DA
+Deposit applied to charges: 5,000 DA
+Deposit refunded: 25,000 DA
+
+I'd like that history to remain visible.
+
+Customers can have unpaid balances. We shouldn't prevent closing the rental completely because sometimes management allows a trusted customer to pay later.
+
+But outstanding balances need to appear clearly.
+
+For cancellations, an employee should record the cancellation reason.
+
+If the customer already paid an advance, we may either refund it or keep some/all of it depending on the situation.
+
+Again, V1 doesn't need automatic cancellation-policy calculations. Staff can determine the refund manually.
+
+Contracts, receipts and documents
+
+Yes, I definitely want the system to generate a printable rental contract.
+
+We already have an existing paper contract, so assume I'll give you the template before development reaches that stage.
+
+It should automatically insert the customer, vehicle, rental dates, price and other relevant information.
+
+I also want printable payment receipts.
+
+For the customer, I'd consider these mandatory before vehicle handover:
+
+identity document, driver's licence, phone number and address.
+
+Employees should be able to upload scans or photos of the ID and licence.
+
+For vehicle handover, I'd require:
+
+starting mileage, fuel level and vehicle-condition confirmation.
+
+Photos should be optional rather than mandatory.
+
+But yes, employees should be able to open the application on a phone browser and take/upload photos directly during the inspection.
+
+Same idea for the vehicle return.
+
+I don't need a dedicated mobile app.
+
+Permissions and audit history
+
+I agree completely about voiding instead of deleting payments.
+
+Financial records shouldn't just disappear.
+
+For permissions, let's keep three main roles.
+
+The Manager can do everything, including price changes, discounts, cancellations, refunds and payment corrections.
+
+The Rental Agent can create customers, reservations, rentals, handovers and returns. They can collect normal payments, but large discounts, refunds or significant price changes should require manager permission.
+
+The Cashier / Finance user can manage payments, refunds and receipts, but doesn't need full control over fleet operations.
+
+We don't need an approval-workflow engine.
+
+Simple permissions are enough.
+
+But sensitive actions should have audit history.
+
+For example:
+
+17/09/2026 14:32
+User: Amine
+Rental #R-2026-0041
+Daily price changed from 8,000 DA to 7,000 DA
+Reason: Long-term customer discount
+
+I'd particularly want audit logs for payment corrections, refunds, cancelled reservations, rental-price modifications and maybe deleting customer/vehicle documents.
+
+Maintenance
+
+Maintenance needs to support both scheduled periods and indefinite blocking.
+
+For planned work we might know:
+
+Maintenance: 21/09/2026 → 22/09/2026
+
+But sometimes a vehicle breaks down and we have no idea when it will be ready.
+
+In that case:
+
+Status: Maintenance — unavailable until manually released.
+
+That vehicle must not be reservable.
+
+Insurance and technical-inspection expiration should trigger dashboard warnings.
+
+I think expired mandatory documents should prevent starting a new rental, but the manager should have an override option with a required reason.
+
+For documents that are going to expire soon, just warn us.
+
+Maybe 30 days, 15 days and 7 days before expiration.
+
+Initial release and migration
+
+I don't have a hard launch deadline because we're treating this as a proper replacement project rather than something that has to be ready next week.
+
+But I don't want a year-long implementation either.
+
+The smallest version I could realistically start using should cover the complete everyday rental workflow.
+
+So for the first usable release, I would want:
+
+Vehicles → Customers → Reservations → Rental → Handover → Payment → Return
+
+plus availability checking, basic dashboard, roles, audit history and contract/receipt printing.
+
+Maintenance could either be included in that release or immediately afterward.
+
+Expenses and advanced reporting can come after the core rental workflow is stable.
+
+Regarding our existing Excel data: yes, vehicles and customers should be importable.
+
+However, I don't need some permanent Excel synchronization feature.
+
+We can clean our existing spreadsheets and perform a one-time import.
+
+Historical rentals would be nice, but I wouldn't make them mandatory.
+
+At minimum I want our current vehicles, existing customers, active rentals, upcoming confirmed reservations and unpaid balances available when we switch over.
+
+There is another business rule I want to add now that we're discussing availability.
+
+A vehicle should never simply be marked "Available" or "Unavailable" with one boolean field.
+
+Its availability depends on what's happening to it.
+
+A car may physically be in our parking lot but still be unavailable because it has a reservation tomorrow, maintenance scheduled, expired documents, or another operational block.
+
+I'd expect your system to derive availability from those things rather than having employees constantly toggle an "available" checkbox.
+
+Other than that, I think we've covered most of the important operational questions.

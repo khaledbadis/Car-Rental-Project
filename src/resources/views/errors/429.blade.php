@@ -1,0 +1,1 @@
+<x-layouts.app><div class="max-w-xl"><p class="text-teal-700 dark:text-teal-300">429</p><h1 class="mt-4 text-2xl font-semibold">{{ __('ui.error_429') }}</h1><a href="/" class="mt-6 inline-block underline">{{ __('ui.dashboard') }}</a></div></x-layouts.app>
