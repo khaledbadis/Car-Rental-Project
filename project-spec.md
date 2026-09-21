@@ -192,7 +192,7 @@ Work one phase at a time. At each gate, demonstrate the implemented slice, run r
 - [x] Record hosting/retention/backup defaults and owner responsibilities in docs/phase-0-decisions.md.
 - [x] Document the initial screen map and FR/AR/EN, RTL, light/dark conventions in docs/phase-0-decisions.md.
 
-Acceptance: decisions and explicitly labeled implementation assumptions are recorded in this spec and docs/phase-0-decisions.md. Real contracts/spreadsheets are replaceable inputs, not blockers for development. Phase 0 documentation is complete; implementation checkboxes below remain open.
+Acceptance: decisions and explicitly labeled implementation assumptions are recorded in this spec and docs/phase-0-decisions.md. Real contracts/spreadsheets are replaceable inputs, not blockers for development. Phase 0 documentation is complete; implementation status is tracked below.
 
 ### Phase 1 — Technical foundation and access
 
@@ -208,11 +208,13 @@ Implementation completed 20 September 2026. See [Phase 1 verification](docs/phas
 
 ### Phase 2 — Fleet and customer records
 
-- [ ] Implement vehicles, categories, rates, archive behavior, and vehicle documents.
-- [ ] Implement customer/driver profiles, duplicate warnings, notes, and document uploads.
-- [ ] Implement private attachment access, expiration indicators, and corresponding APIs.
+- [x] Implement vehicles, categories, rates, archive behavior, and vehicle documents.
+- [x] Implement customer/driver profiles, duplicate warnings, notes, and document uploads.
+- [x] Implement private attachment access, expiration indicators, and corresponding APIs.
 
 Acceptance: staff can create and reuse customer and vehicle records; unauthorized document access fails; expired/soon-expiring vehicle documents are distinguishable; phone capture/upload works; referenced records retain their history after archiving.
+
+Implementation completed 21 September 2026. See [Phase 2 verification](docs/phase-2-verification.md). Sidebar, navigation, search and notification improvements are included. Physical-phone camera capture remains a device acceptance check; browser upload and mobile layouts have been verified.
 
 ### Phase 3 — Reservations and reliable availability
 

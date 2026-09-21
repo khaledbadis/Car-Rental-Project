@@ -1,0 +1,5 @@
+<div class="relative min-w-0 flex-1 max-w-md" x-data="{open:false}" @click.outside="open=false" @keydown.escape.window="open=false">
+<flux:input wire:model.live.debounce.300ms="query" icon="magnifying-glass" :placeholder="__('catalog.search_all')" :aria-label="__('catalog.search_all')" @focus="open=true" @input="open=true" />
+@if(mb_strlen(trim($query))>=2)<div x-show="open" x-cloak class="absolute inset-x-0 top-full z-30 mt-2 max-h-80 overflow-auto rounded-xl border border-zinc-200 bg-white p-2 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
+@forelse($results as $kind=>$items)@foreach($items as $item)<a class="block rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800" href="{{ route($kind.'s.show',$item->id) }}"><span class="font-medium">{{ $kind==='vehicle'?$item->registration.' · '.$item->make.' '.$item->model:$item->name }}</span><span class="ms-2 text-xs text-zinc-500">{{ __('catalog.'.$kind) }}</span></a>@endforeach @empty @endforelse
+@if(collect($results)->flatten()->isEmpty())<p class="p-3 text-sm">{{ __('catalog.no_results') }}</p>@endif</div>@endif</div>

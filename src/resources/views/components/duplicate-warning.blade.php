@@ -1,0 +1,2 @@
+@props(['duplicates'])
+@if($duplicates->isNotEmpty())<div role="status" class="mb-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"><p class="font-medium">{{ __('catalog.duplicates') }}</p>@foreach($duplicates as $duplicate)<a class="mt-2 block underline" href="{{ route('customers.show',$duplicate->id) }}">{{ $duplicate->name }} · {{ $duplicate->phone }}</a>@endforeach<p class="mt-2 text-sm">{{ __('catalog.duplicate_hint') }}</p></div>@endif

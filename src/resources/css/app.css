@@ -7,3 +7,18 @@
 @theme { --font-sans: ui-sans-serif, system-ui, sans-serif; --color-accent: var(--color-teal-700); --color-accent-content: var(--color-teal-700); --color-accent-foreground: white; }
 @layer base { button, a, input, select, textarea { @apply focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600; } }
 [x-cloak] { display: none !important; }
+
+.app-sidebar { width: 17rem; transform: translateX(-100%); transition: transform 240ms ease, width 240ms ease; }
+[dir="rtl"] .app-sidebar { transform: translateX(100%); }
+.sidebar-open .app-sidebar { transform: translateX(0); }
+.app-content { transition: margin-inline-start 240ms ease; }
+@media(min-width:1024px) {
+ .app-sidebar, [dir="rtl"] .app-sidebar { transform: none; }
+ .app-content { margin-inline-start: 17rem; }
+ .sidebar-collapsed .app-sidebar { width: 5rem; }
+ .sidebar-collapsed .app-content { margin-inline-start: 5rem; }
+ .sidebar-collapsed .sidebar-label { display:none; }
+ .sidebar-collapsed .sidebar-link { justify-content:center; padding-inline:0; }
+ .sidebar-collapsed .app-sidebar > div:first-child { padding-inline: 1.25rem; }
+}
+@media(prefers-reduced-motion:reduce) { .app-sidebar,.app-content { transition:none; } }

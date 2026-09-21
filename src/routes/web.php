@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\SessionController;
 use App\Livewire\Audit;
+use App\Livewire\CatalogDirectory;
+use App\Livewire\CatalogProfile;
 use App\Livewire\Preferences;
 use App\Livewire\Settings;
 use App\Livewire\Staff;
@@ -25,4 +28,12 @@ Route::middleware(['auth', 'account'])->group(function () {
     Route::get('/settings', Settings::class)->middleware('can:settings.manage')->name('settings');
     Route::get('/audit', Audit::class)->middleware('can:audit.view')->name('audit');
     Route::post('/logout', [SessionController::class, 'destroy'])->name('logout');
+});
+
+Route::middleware(['auth', 'account'])->group(function () {
+    foreach (['vehicle', 'customer'] as $kind) {
+        Route::get('/'.$kind.'s', CatalogDirectory::class)->defaults('kind', $kind)->name($kind.'s.index');
+        Route::get('/'.$kind.'s/{id}', CatalogProfile::class)->whereNumber('id')->defaults('kind', $kind)->name($kind.'s.show');
+    }
+    Route::get('/documents/{id}', [CatalogController::class, 'download'])->whereNumber('id')->name('documents.download');
 });
