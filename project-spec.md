@@ -1,6 +1,6 @@
 # Car Rental Management — Project Specification
 
-Status: Updated implementation specification · 20 September 2026
+Status: Phase 3 implemented · 24 September 2026
 
 Sources: [Client brief](client-brief.md), [Client answers](QA.txt), [Resolved decisions](Decisions.txt), and project owner's technical requirements. The owner's 20 September instruction authorizes fictional documents and migration samples in place of waiting for client materials; placeholders must remain identifiable and replaceable. This document defines scope and implementation gates; it does not authorize implementing every phase at once.
 
@@ -49,6 +49,12 @@ Use permissions rather than an approval workflow: an authorized person performs 
 Audit sensitive actions with actor, entity, action, timestamp, before/after values where applicable, and reason: price/discount changes, reservation cancellation, refunds, reversals, deposit application, document deletion, document-expiry override, conflict resolution/reassignment, and permission changes. Audit logs cannot be edited through normal application operations. Do not copy document contents or credentials into logs.
 
 ## 4. Functional requirements
+
+### Staff profiles — planned for Phase 5
+
+Expand Preferences before staff acceptance/cutover: editable full name, contact phone, email, postal address and profile picture. Keep an immutable, unique username separate from the editable full name. Existing accounts require a deterministic backfill with collision review before the username becomes mandatory; do not derive permanent audit identity from a mutable email or display name. Audit events retain the stable user ID and username attribution, while profile changes must not rewrite historical events. Decide whether the existing email-based login remains or accepts username as well during this implementation; no login change is implied now.
+
+Use shared web/API profile actions, server-side self-edit authorization, validated private image storage and replacement/removal, translated labels, and responsive avatar controls. Audit profile edits without copying contact details or image contents unnecessarily. Username edits must fail through both web and API; changing full name or email must preserve prior audit attribution. Password recovery remains Manager-assisted unless separately changed. Requested 24 September 2026; deliberately deferred from the reservation phase.
 
 ### 4.1 Vehicles and documents
 
@@ -218,12 +224,14 @@ Implementation completed 21 September 2026. See [Phase 2 verification](docs/phas
 
 ### Phase 3 — Reservations and reliable availability
 
-- [ ] Implement tentative and confirmed reservations, cancellation, and reassignment.
-- [ ] Implement interval search, preparation buffers, and scheduled/indefinite operational blocks.
-- [ ] Add concurrency protection, conflict messages, and APIs.
-- [ ] Provide calendar/list views of upcoming commitments.
+- [x] Implement tentative and confirmed reservations, cancellation, and reassignment.
+- [x] Implement interval search, preparation buffers, and scheduled/indefinite operational blocks.
+- [x] Add concurrency protection, conflict messages, and APIs.
+- [x] Provide calendar/list views of upcoming commitments.
 
 Acceptance: known vehicle-document expiry before return blocks confirmation except for a reasoned Manager override; no-show timers never free a reservation; tentative category inquiry consumes no inventory; confirmation without a vehicle fails; overlapping concurrent confirmations yield only one success; pickup exactly at buffered end succeeds; maintenance blocks exclude vehicles; reassignment atomically releases one car and allocates the other.
+
+Implementation completed 24 September 2026. See [Phase 3 verification](docs/phase-3-verification.md). Rental conversion, active overdue occupancy and financial settlement remain Phase 4.
 
 ### Phase 4 — Rental operations and financial records
 
@@ -242,6 +250,7 @@ Acceptance: expired driver licences block even a Manager; a 10% agent base disco
 - [ ] Complete operational dashboard, date filters, and basic finance/overdue lists.
 - [ ] Rehearse migration of vehicles, customers, active rentals, upcoming reservations, and opening unpaid balances.
 - [ ] Provision staging and production VM/Docker deployment, HTTPS, monitoring, backups, and restore procedure.
+- [ ] Expand Preferences with editable full name, phone, email, address and profile picture; introduce immutable unique usernames and preserve audit attribution.
 - [ ] Conduct staff acceptance sessions across roles, languages, themes, and screen sizes.
 - [ ] Perform approved cutover with reconciliation, training, and rollback/recovery readiness.
 

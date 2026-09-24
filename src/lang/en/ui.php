@@ -64,6 +64,13 @@ return [
     'login_hint' => 'Sign in with your staff account.',
     'recovery_hint' => 'Need access? Contact your manager.',
     'actions' => [
+        'reservation.created' => 'Reservation · created',
+        'reservation.updated' => 'Reservation · updated / reassigned',
+        'reservation.cancelled' => 'Reservation · cancelled',
+        'reservation.document_override' => 'Reservation · document override',
+        'block.created' => 'Block · created',
+        'block.released' => 'Block · released',
+
         'vehicle.created' => 'Vehicle · created',
         'vehicle.updated' => 'Vehicle · updated',
         'vehicle.archived' => 'Vehicle · archived',
@@ -79,4 +86,8 @@ return [
     'error_419' => 'Your session has expired. Reload the page.',
     'error_429' => 'Too many requests. Try again shortly.',
     'error_500' => 'Something went wrong. Try again shortly.',
+    'reservations' => 'Reservations',
+    'availability' => 'Availability & blocks',
+    'reservations_hint' => 'Inquiries, confirmations and the weekly schedule.',
+    'availability_hint' => 'Find a vehicle and manage operational blocks.',
 ];

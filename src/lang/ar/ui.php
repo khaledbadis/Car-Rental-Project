@@ -64,6 +64,13 @@ return [
     'login_hint' => 'سجّل الدخول بحساب الموظف.',
     'recovery_hint' => 'تحتاج إلى الوصول؟ تواصل مع مديرك.',
     'actions' => [
+        'reservation.created' => 'حجز · إنشاء',
+        'reservation.updated' => 'حجز · تعديل / إعادة تعيين',
+        'reservation.cancelled' => 'حجز · إلغاء',
+        'reservation.document_override' => 'حجز · استثناء الوثائق',
+        'block.created' => 'حظر · إنشاء',
+        'block.released' => 'حظر · تحرير',
+
         'vehicle.created' => 'مركبة · تم الإنشاء',
         'vehicle.updated' => 'مركبة · تم التعديل',
         'vehicle.archived' => 'مركبة · تمت الأرشفة',
@@ -79,4 +86,8 @@ return [
     'error_419' => 'انتهت الجلسة. أعد تحميل الصفحة.',
     'error_429' => 'طلبات كثيرة. أعد المحاولة قريبًا.',
     'error_500' => 'حدث خطأ. أعد المحاولة قريبًا.',
+    'reservations' => 'الحجوزات',
+    'availability' => 'التوفر والحظر',
+    'reservations_hint' => 'الاستفسارات والتأكيدات والجدول الأسبوعي.',
+    'availability_hint' => 'البحث عن مركبة وإدارة فترات الحظر.',
 ];

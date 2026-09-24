@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AccountAccess;
+use App\Modules\Reservations\Conflict;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,5 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $m->alias(['account' => AccountAccess::class]);
     })
     ->withExceptions(function (Exceptions $e): void {
+        $e->render(function (Conflict $error, Request $request) {
+            return response()->json(['message' => $error->getMessage(), 'code' => $error->errorCode, 'details' => $error->details], 409);
+        });
         $e->shouldRenderJsonWhen(fn (Request $r) => $r->is('api/*') || $r->expectsJson());
     })->create();

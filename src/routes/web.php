@@ -3,9 +3,12 @@
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\SessionController;
 use App\Livewire\Audit;
+use App\Livewire\Availability;
 use App\Livewire\CatalogDirectory;
 use App\Livewire\CatalogProfile;
 use App\Livewire\Preferences;
+use App\Livewire\ReservationEditor;
+use App\Livewire\Reservations;
 use App\Livewire\Settings;
 use App\Livewire\Staff;
 use Illuminate\Http\Request;
@@ -36,4 +39,10 @@ Route::middleware(['auth', 'account'])->group(function () {
         Route::get('/'.$kind.'s/{id}', CatalogProfile::class)->whereNumber('id')->defaults('kind', $kind)->name($kind.'s.show');
     }
     Route::get('/documents/{id}', [CatalogController::class, 'download'])->whereNumber('id')->name('documents.download');
+});
+
+Route::middleware(['auth', 'account'])->group(function () {
+    Route::get('/reservations', Reservations::class)->name('reservations');
+    Route::get('/reservations/{id}', ReservationEditor::class)->whereNumber('id')->name('reservations.show');
+    Route::get('/availability', Availability::class)->name('availability');
 });

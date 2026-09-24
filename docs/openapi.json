@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Rental Foundation API",
-    "version": "1.1.0",
-    "description": "Phase 1 foundation and Phase 2 fleet, customer and private-document APIs. Livewire invokes the same application actions. Sanctum bearer token role and ability checks apply."
+    "title": "Car Rental API",
+    "version": "1.2.0",
+    "description": "Foundation, catalog, reservations and availability APIs. Web and API share application actions. Permissions require both role and token ability. Dates accept ISO 8601 with explicit offset and seconds; stored UTC, agency dates use Africa/Algiers."
   },
   "servers": [
     {
@@ -2702,6 +2702,680 @@
           }
         }
       }
+    },
+    "/reservations": {
+      "get": {
+        "summary": "List reservations (25 per page)",
+        "description": "Required permission: reservations.view. Date filters include the saved preparation buffer when testing the lower boundary.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Reservation"
+                      }
+                    },
+                    "current_page": {
+                      "type": "integer"
+                    },
+                    "last_page": {
+                      "type": "integer"
+                    },
+                    "per_page": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role or token ability denied"
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "409": {
+            "description": "Schedule conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleConflict"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failure"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "tentative",
+                "confirmed",
+                "cancelled",
+                "converted"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "vehicle_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "customer_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create inquiry or confirmation",
+        "description": "Required permission: reservations.manage.",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Reservation"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role or token ability denied"
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "409": {
+            "description": "Schedule conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleConflict"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failure"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Reservation, affected commitments and pickup status",
+        "description": "Required permission: reservations.view.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Reservation"
+                    },
+                    "conflicts": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Commitment"
+                      }
+                    },
+                    "pickup_status": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        null,
+                        "pickup_overdue",
+                        "no_show"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role or token ability denied"
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "409": {
+            "description": "Schedule conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleConflict"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failure"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        }
+      },
+      "put": {
+        "summary": "Edit, confirm, reschedule or reassign atomically",
+        "description": "Required permission: reservations.manage.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Reservation"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role or token ability denied"
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "409": {
+            "description": "Schedule conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleConflict"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failure"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations/{id}/cancel": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ],
+      "post": {
+        "summary": "Cancel and release commitment; finances handled separately",
+        "description": "Required permission: reservations.cancel.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Reservation"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role or token ability denied"
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "409": {
+            "description": "Schedule conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleConflict"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failure"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleReason"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/availability": {
+      "get": {
+        "summary": "Search all active vehicles, including unavailability reasons",
+        "description": "Required permission: reservations.view.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AvailabilityResult"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role or token ability denied"
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "409": {
+            "description": "Schedule conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleConflict"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failure"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        },
+        "parameters": [
+          {
+            "name": "starts_at",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2027-01-10T10:00:00+01:00"
+            }
+          },
+          {
+            "name": "ends_at",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2027-01-10T10:00:00+01:00"
+            }
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "transmission",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "manual",
+                "automatic"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "/blocks": {
+      "get": {
+        "summary": "List operational blocks including released history (25 per page)",
+        "description": "Required permission: reservations.view.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Commitment"
+                      }
+                    },
+                    "current_page": {
+                      "type": "integer"
+                    },
+                    "last_page": {
+                      "type": "integer"
+                    },
+                    "per_page": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role or token ability denied"
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "409": {
+            "description": "Schedule conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleConflict"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failure"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create scheduled or indefinite block",
+        "description": "Required permission: blocks.manage; fleet.manage for maintenance, administrative or emergency.",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Commitment"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role or token ability denied"
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "409": {
+            "description": "Schedule conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleConflict"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failure"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlockInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/blocks/{id}/release": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ],
+      "post": {
+        "summary": "Release a block now without deleting its history",
+        "description": "Required permission: blocks.manage; fleet.manage for maintenance, administrative or emergency.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Commitment"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role or token ability denied"
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "409": {
+            "description": "Schedule conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleConflict"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failure"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleReason"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3407,6 +4081,403 @@
             }
           }
         ]
+      },
+      "ReservationInput": {
+        "type": "object",
+        "required": [
+          "customer_id",
+          "status",
+          "starts_at",
+          "ends_at"
+        ],
+        "properties": {
+          "customer_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "category_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "vehicle_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "tentative",
+              "confirmed"
+            ]
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2027-01-10T10:00:00+01:00"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2027-01-10T10:00:00+01:00"
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 4000
+          },
+          "document_override_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "description": "Confirmed requires a vehicle. Updates require version and reason. Confirmed cannot become tentative; use cancellation. Current preparation setting is snapshotted on first confirmation, retained on edits. Missing mandatory scans/expiry dates or latest document expiry before return require a Manager override. Override is scoped to vehicle, exact period and document issues; changed period/vehicle/issues requires renewed authorization."
+      },
+      "Reservation": {
+        "type": "object",
+        "properties": {
+          "customer_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "category_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "vehicle_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "tentative",
+              "confirmed",
+              "cancelled",
+              "converted"
+            ]
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2027-01-10T10:00:00+01:00"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2027-01-10T10:00:00+01:00"
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 4000
+          },
+          "document_override_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "preparation_minutes": {
+            "type": "integer"
+          },
+          "document_issues": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "cancelled_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "cancellation_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_by": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "customer": {
+            "type": "object"
+          },
+          "vehicle": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "category": {
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        }
+      },
+      "BlockInput": {
+        "type": "object",
+        "required": [
+          "vehicle_id",
+          "kind",
+          "starts_at",
+          "reason"
+        ],
+        "properties": {
+          "vehicle_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "maintenance",
+              "cleaning",
+              "inspection",
+              "preparation",
+              "temporary",
+              "administrative"
+            ]
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2027-01-10T10:00:00+01:00"
+          },
+          "ends_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "emergency": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "description": "Null end means indefinite. Maintenance, administrative and emergency blocks require fleet.manage in addition to blocks.manage. Ordinary overlaps reject; emergency retains bookings and exposes conflicts."
+      },
+      "Commitment": {
+        "type": "object",
+        "properties": {
+          "vehicle_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "maintenance",
+              "cleaning",
+              "inspection",
+              "preparation",
+              "temporary",
+              "administrative"
+            ]
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2027-01-10T10:00:00+01:00"
+          },
+          "ends_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "emergency": {
+            "type": "boolean",
+            "default": false
+          },
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reservation_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "released_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "release_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ScheduleConflict": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "stale",
+              "closed",
+              "cannot_unconfirm",
+              "archived",
+              "before_service",
+              "overlap",
+              "documents"
+            ]
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "conflicts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Commitment"
+                }
+              },
+              "document_issues": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      },
+      "AvailabilityResult": {
+        "type": "object",
+        "properties": {
+          "vehicle": {
+            "type": "object"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "conflicts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Commitment"
+            }
+          },
+          "document_issues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "insurance",
+                    "inspection"
+                  ]
+                },
+                "code": {
+                  "type": "string",
+                  "enum": [
+                    "document_missing",
+                    "document_expired"
+                  ]
+                },
+                "expires_at": {
+                  "type": "string",
+                  "format": "date"
+                }
+              }
+            }
+          },
+          "before_service": {
+            "type": "boolean"
+          },
+          "preparation_minutes": {
+            "type": "integer"
+          }
+        }
+      },
+      "ScheduleReason": {
+        "type": "object",
+        "required": [
+          "version",
+          "reason"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
       }
     }
   }

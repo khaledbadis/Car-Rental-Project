@@ -64,6 +64,13 @@ return [
     'login_hint' => 'Connectez-vous avec votre compte professionnel.',
     'recovery_hint' => 'Besoin d’accès ? Contactez votre responsable.',
     'actions' => [
+        'reservation.created' => 'Réservation · créée',
+        'reservation.updated' => 'Réservation · modifiée / réaffectée',
+        'reservation.cancelled' => 'Réservation · annulée',
+        'reservation.document_override' => 'Réservation · dérogation documentaire',
+        'block.created' => 'Blocage · créé',
+        'block.released' => 'Blocage · libéré',
+
         'vehicle.created' => 'Véhicule · créé',
         'vehicle.updated' => 'Véhicule · modifié',
         'vehicle.archived' => 'Véhicule · archivé',
@@ -79,4 +86,8 @@ return [
     'error_419' => 'Votre session a expiré. Rechargez la page.',
     'error_429' => 'Trop de requêtes. Réessayez bientôt.',
     'error_500' => 'Une erreur est survenue. Réessayez bientôt.',
+    'reservations' => 'Réservations',
+    'availability' => 'Disponibilité et blocages',
+    'reservations_hint' => 'Demandes, confirmations et planning hebdomadaire.',
+    'availability_hint' => 'Trouver un véhicule et gérer les blocages.',
 ];

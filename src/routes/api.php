@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\FoundationController as Api;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\ReservationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->middleware(['auth:sanctum', 'account', 'throttle:api'])->group(function () {
@@ -34,4 +35,17 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'account', 'throttle:api'])->gr
     Route::post('customers/{id}/notes', [$controller, 'note'])->whereNumber('id');
     Route::get('documents/{id}', [$controller, 'download'])->whereNumber('id');
     Route::delete('documents/{id}', [$controller, 'remove'])->whereNumber('id');
+});
+
+Route::prefix('v1')->middleware(['auth:sanctum', 'account', 'throttle:api'])->group(function () {
+    $c = ReservationController::class;
+    Route::get('availability', [$c, 'availability']);
+    Route::get('reservations', [$c, 'index']);
+    Route::post('reservations', [$c, 'create']);
+    Route::get('reservations/{id}', [$c, 'show'])->whereNumber('id');
+    Route::put('reservations/{id}', [$c, 'update'])->whereNumber('id');
+    Route::post('reservations/{id}/cancel', [$c, 'cancel'])->whereNumber('id');
+    Route::get('blocks', [$c, 'blocks']);
+    Route::post('blocks', [$c, 'block']);
+    Route::post('blocks/{id}/release', [$c, 'release'])->whereNumber('id');
 });

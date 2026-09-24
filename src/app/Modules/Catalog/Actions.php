@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleCategory;
 use App\Modules\Foundation\Actions as Foundation;
+use App\Support\Input;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -68,7 +69,7 @@ class Actions
     public function category(User $actor, array $input): VehicleCategory
     {
         Gate::forUser($actor)->authorize('fleet.manage');
-        $v = Validator::make($input, ['name' => 'required|string|max:80|unique:vehicle_categories'])->validate();
+        $v = Validator::make(Input::normalize($input), ['name' => 'required|string|max:80|unique:vehicle_categories'])->validate();
 
         return DB::transaction(function () use ($actor, $v) {
             $c = VehicleCategory::create($v);
@@ -96,7 +97,7 @@ class Actions
             $rules['version'] = 'required|integer|min:1';
             $rules['reason'] = 'required|string|max:500';
         }
-        $v = Validator::make($input, $rules)->validate();
+        $v = Validator::make(Input::normalize($input), $rules)->validate();
         if ($kind === 'vehicle') {
             $v['registration'] = $this->normalized($v['registration']);
         } else {
@@ -152,7 +153,7 @@ class Actions
     public function archive(User $actor, string $kind, int $id, array $input): Model
     {
         $this->authorize($actor, $kind, 'archive');
-        $v = Validator::make($input, ['reason' => 'required|string|max:500', 'version' => 'required|integer'])->validate();
+        $v = Validator::make(Input::normalize($input), ['reason' => 'required|string|max:500', 'version' => 'required|integer'])->validate();
 
         return DB::transaction(function () use ($actor, $kind, $id, $v) {
             DB::table('agency_settings')->where('id', 1)->lockForUpdate()->first();
@@ -170,7 +171,7 @@ class Actions
     public function duplicates(User $actor, array $input, ?int $except = null)
     {
         $this->authorize($actor, 'customer');
-        $v = Validator::make($input, ['name' => 'nullable|string|max:160', 'phone' => 'nullable|string|max:40', 'identity_number' => 'nullable|string|max:80', 'licence_number' => 'nullable|string|max:80'])->validate();
+        $v = Validator::make(Input::normalize($input), ['name' => 'nullable|string|max:160', 'phone' => 'nullable|string|max:40', 'identity_number' => 'nullable|string|max:80', 'licence_number' => 'nullable|string|max:80'])->validate();
         $phone = preg_replace('/\D/', '', $v['phone'] ?? '');
         $name = trim($v['name'] ?? '');
         $identity = $this->normalized($v['identity_number'] ?? null);
@@ -197,7 +198,7 @@ class Actions
         $this->authorize($actor, 'customer', 'manage');
         $record = Customer::findOrFail($id);
         abort_if($record->archived_at, 409, __('catalog.archived_readonly'));
-        $v = Validator::make($input, ['category' => ['required', Rule::in(['late_return', 'unpaid', 'accident', 'damage', 'other'])], 'body' => 'required|string|max:4000'])->validate();
+        $v = Validator::make(Input::normalize($input), ['category' => ['required', Rule::in(['late_return', 'unpaid', 'accident', 'damage', 'other'])], 'body' => 'required|string|max:4000'])->validate();
 
         return DB::transaction(function () use ($actor, $id, $v) {
             $owner = Customer::lockForUpdate()->findOrFail($id);
@@ -215,7 +216,7 @@ class Actions
         $record = $this->find($actor, $kind, $id);
         abort_if($record->archived_at, 409, __('catalog.archived_readonly'));
         $limit = min(10, (int) DB::table('agency_settings')->value('upload_limit_mb')) * 1024;
-        $v = Validator::make($input, ['type' => ['required', Rule::in(config('catalog.documents.'.$kind))], 'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:'.$limit, 'expires_at' => 'nullable|date_format:Y-m-d'])->validate();
+        $v = Validator::make(Input::normalize($input), ['type' => ['required', Rule::in(config('catalog.documents.'.$kind))], 'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:'.$limit, 'expires_at' => 'nullable|date_format:Y-m-d'])->validate();
         $detectedMime = (new \finfo(FILEINFO_MIME_TYPE))->file($v['file']->getRealPath());
         if (! in_array($detectedMime, ['application/pdf', 'image/jpeg', 'image/png'], true)) {
             throw ValidationException::withMessages(['file' => __('validation.mimes', ['attribute' => __('catalog.file')])]);
@@ -250,8 +251,9 @@ class Actions
     public function removeDocument(User $actor, int $id, array $input): void
     {
         Gate::forUser($actor)->authorize('documents.remove');
-        $v = Validator::make($input, ['reason' => 'required|string|max:500'])->validate();
+        $v = Validator::make(Input::normalize($input), ['reason' => 'required|string|max:500'])->validate();
         $doc = DB::transaction(function () use ($actor, $id, $v) {
+            DB::table('agency_settings')->where('id', 1)->lockForUpdate()->first();
             $d = Document::whereNull('removed_at')->lockForUpdate()->findOrFail($id);
             $d->update(['removed_at' => now()]);
             app(Foundation::class)->audit($actor, 'document.removed', 'document', $id, ['type' => $d->type], null, $v['reason']);
