@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Car Rental API",
-    "version": "1.2.0",
-    "description": "Foundation, catalog, reservations and availability APIs. Web and API share application actions. Permissions require both role and token ability. Dates accept ISO 8601 with explicit offset and seconds; stored UTC, agency dates use Africa/Algiers."
+    "version": "1.3.0",
+    "description": "Foundation, catalog, reservations and availability APIs. Web and API share application actions. Permissions require both role and token ability. Dates accept ISO 8601 with explicit offset and seconds; stored UTC, agency dates use Africa/Algiers. Rental lifecycle and append-only ledger share Livewire application actions. Every new rental, lifecycle, ledger and photo write requires a body idempotency_key UUID: retry with the same actor, key and normalized payload; changed input returns 409 retry_mismatch. Lifecycle writes require current version. Monetary inputs are decimal DZD strings with up to two decimals; outputs are integer centimes."
   },
   "servers": [
     {
@@ -3376,6 +3376,723 @@
           }
         }
       }
+    },
+    "/rentals": {
+      "get": {
+        "summary": "List rentals",
+        "description": "rentals.view. Paginated 20 per page. status supports draft/active/returned/cancelled/overdue/debt.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Rental"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role/token denied"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Domain conflict: code, localized message and optional details. Stale version, overlap, driver_incomplete/expired, retry_mismatch, deposit_limit, dependent_entries."
+          },
+          "422": {
+            "description": "Validation errors"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customer_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "vehicle_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create walk-in or convert reservation",
+        "description": "rentals.manage. Transfers commitment atomically; conversion preserves advances in same financial account.",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Rental"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role/token denied"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Domain conflict: code, localized message and optional details. Stale version, overlap, driver_incomplete/expired, retry_mismatch, deposit_limit, dependent_entries."
+          },
+          "422": {
+            "description": "Validation errors"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RentalCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rentals/{id}": {
+      "get": {
+        "summary": "Rental details and history",
+        "description": "rentals.view.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Rental"
+                    },
+                    "finances": {
+                      "$ref": "#/components/schemas/LedgerRead"
+                    },
+                    "versions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "description": "Numbered immutable agreement snapshot, actor, reason and creation timestamp."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role/token denied"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Domain conflict: code, localized message and optional details. Stale version, overlap, driver_incomplete/expired, retry_mismatch, deposit_limit, dependent_entries."
+          },
+          "422": {
+            "description": "Validation errors"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/rentals/{id}/handover": {
+      "post": {
+        "summary": "Handover rental",
+        "description": "rentals.manage. Handover/cancel draft-only; return active-only; extension draft/active. Version and idempotency required.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Rental"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role/token denied"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Domain conflict: code, localized message and optional details. Stale version, overlap, driver_incomplete/expired, retry_mismatch, deposit_limit, dependent_entries."
+          },
+          "422": {
+            "description": "Validation errors"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RentalInspectionInput"
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/rentals/{id}/return": {
+      "post": {
+        "summary": "Return rental",
+        "description": "rentals.manage. Handover/cancel draft-only; return active-only; extension draft/active. Version and idempotency required.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Rental"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role/token denied"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Domain conflict: code, localized message and optional details. Stale version, overlap, driver_incomplete/expired, retry_mismatch, deposit_limit, dependent_entries."
+          },
+          "422": {
+            "description": "Validation errors"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RentalInspectionInput"
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/rentals/{id}/extend": {
+      "post": {
+        "summary": "Extend rental",
+        "description": "rentals.manage. Handover/cancel draft-only; return active-only; extension draft/active. Version and idempotency required.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Rental"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role/token denied"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Domain conflict: code, localized message and optional details. Stale version, overlap, driver_incomplete/expired, retry_mismatch, deposit_limit, dependent_entries."
+          },
+          "422": {
+            "description": "Validation errors"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RentalExtend"
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/rentals/{id}/cancel": {
+      "post": {
+        "summary": "Cancel rental",
+        "description": "rentals.manage. Handover/cancel draft-only; return active-only; extension draft/active. Version and idempotency required.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Rental"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role/token denied"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Domain conflict: code, localized message and optional details. Stale version, overlap, driver_incomplete/expired, retry_mismatch, deposit_limit, dependent_entries."
+          },
+          "422": {
+            "description": "Validation errors"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RentalCancel"
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/rentals/{id}/ledger": {
+      "get": {
+        "summary": "Read ledger",
+        "description": "rentals.view. Reading does not create account.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LedgerRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role/token denied"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Domain conflict: code, localized message and optional details. Stale version, overlap, driver_incomplete/expired, retry_mismatch, deposit_limit, dependent_entries."
+          },
+          "422": {
+            "description": "Validation errors"
+          }
+        }
+      },
+      "post": {
+        "summary": "Append financial entry",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/LedgerEntry"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role/token denied"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Domain conflict: code, localized message and optional details. Stale version, overlap, driver_incomplete/expired, retry_mismatch, deposit_limit, dependent_entries."
+          },
+          "422": {
+            "description": "Validation errors"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LedgerInput"
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/reservations/{id}/ledger": {
+      "get": {
+        "summary": "Read ledger",
+        "description": "rentals.view. Reading does not create account.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LedgerRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role/token denied"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Domain conflict: code, localized message and optional details. Stale version, overlap, driver_incomplete/expired, retry_mismatch, deposit_limit, dependent_entries."
+          },
+          "422": {
+            "description": "Validation errors"
+          }
+        }
+      },
+      "post": {
+        "summary": "Append financial entry",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/LedgerEntry"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role/token denied"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Domain conflict: code, localized message and optional details. Stale version, overlap, driver_incomplete/expired, retry_mismatch, deposit_limit, dependent_entries."
+          },
+          "422": {
+            "description": "Validation errors"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LedgerInput"
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/inspections/{id}/photos": {
+      "post": {
+        "summary": "Attach private inspection photo",
+        "description": "rentals.manage. Actual JPEG/PNG content; agency limit up to 10MB. Idempotency includes file content hash.",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "description": "Photo metadata, storage path hidden."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role/token denied"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Domain conflict: code, localized message and optional details. Stale version, overlap, driver_incomplete/expired, retry_mismatch, deposit_limit, dependent_entries."
+          },
+          "422": {
+            "description": "Validation errors"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "idempotency_key",
+                  "file"
+                ],
+                "properties": {
+                  "idempotency_key": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/inspection-photos/{id}": {
+      "get": {
+        "summary": "Download private inspection photo",
+        "description": "rentals.manage. Attachment, nosniff, private/no-store. Finance denied.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Role/token denied"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Domain conflict: code, localized message and optional details. Stale version, overlap, driver_incomplete/expired, retry_mismatch, deposit_limit, dependent_entries."
+          },
+          "422": {
+            "description": "Validation errors"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ]
     }
   },
   "components": {
@@ -4478,6 +5195,500 @@
             "maxLength": 500
           }
         }
+      },
+      "RentalCreate": {
+        "type": "object",
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reservation_id": {
+            "type": "integer"
+          },
+          "reservation_version": {
+            "type": "integer"
+          },
+          "customer_id": {
+            "type": "integer"
+          },
+          "vehicle_id": {
+            "type": "integer"
+          },
+          "driver_id": {
+            "type": "integer"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Offset and seconds required."
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Offset and seconds required."
+          },
+          "mileage_allowance": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "terms": {
+            "type": "string"
+          },
+          "document_override_reason": {
+            "type": "string"
+          },
+          "basis": {
+            "enum": [
+              "daily",
+              "weekly",
+              "monthly"
+            ]
+          },
+          "discount_type": {
+            "enum": [
+              "none",
+              "percent",
+              "fixed"
+            ]
+          },
+          "discount_value": {
+            "type": "string",
+            "pattern": "^\\d{1,10}(\\.\\d{1,2})?$",
+            "example": "8000.00"
+          },
+          "negotiated_total": {
+            "type": "string",
+            "pattern": "^\\d{1,10}(\\.\\d{1,2})?$",
+            "example": "8000.00"
+          },
+          "pricing_reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "idempotency_key",
+          "basis",
+          "discount_type"
+        ],
+        "description": "Confirmed reservation_id + reservation_version, or customer_id + vehicle_id + starts_at + ends_at for walk-in. Null allowance means unlimited. Daily rounds up 24h; weekly/monthly require whole 7/30-day periods unless Manager negotiated_total. Nonzero discounts/custom prices require pricing_reason. Agent discount maximum 10% of base; additional charges unaffected."
+      },
+      "RentalInspectionInput": {
+        "type": "object",
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "driver_id": {
+            "type": "integer"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Offset and seconds required."
+          },
+          "mileage_km": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "fuel_percent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "condition_confirmed": {
+            "type": "boolean",
+            "const": true
+          },
+          "condition_notes": {
+            "type": "string"
+          },
+          "correction_reason": {
+            "type": "string"
+          },
+          "document_override_reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "idempotency_key",
+          "version",
+          "occurred_at",
+          "mileage_km",
+          "fuel_percent",
+          "condition_confirmed",
+          "condition_notes"
+        ],
+        "description": "Company driver may be assigned at handover. Driver details, identity/licence scans and unexpired dates mandatory. Return allows debt and requires Manager reason if mileage decreases. Actual time cannot be future. Extra fees and early-return repricing are explicit."
+      },
+      "RentalExtend": {
+        "type": "object",
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Offset and seconds required."
+          },
+          "reason": {
+            "type": "string"
+          },
+          "document_override_reason": {
+            "type": "string"
+          },
+          "basis": {
+            "enum": [
+              "daily",
+              "weekly",
+              "monthly"
+            ]
+          },
+          "discount_type": {
+            "enum": [
+              "none",
+              "percent",
+              "fixed"
+            ]
+          },
+          "discount_value": {
+            "type": "string",
+            "pattern": "^\\d{1,10}(\\.\\d{1,2})?$",
+            "example": "8000.00"
+          },
+          "negotiated_total": {
+            "type": "string",
+            "pattern": "^\\d{1,10}(\\.\\d{1,2})?$",
+            "example": "8000.00"
+          },
+          "pricing_reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "idempotency_key",
+          "version",
+          "ends_at",
+          "reason",
+          "basis",
+          "discount_type"
+        ],
+        "description": "Uses saved rate snapshot, rechecks inventory and vehicle documents, appends agreement version and replaces base charge by reversal/new charge."
+      },
+      "RentalCancel": {
+        "type": "object",
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "idempotency_key",
+          "version",
+          "reason"
+        ],
+        "description": "Draft only. Releases allocation and reverses base charge, preserving payments as credit."
+      },
+      "LedgerInput": {
+        "type": "object",
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "enum": [
+              "charge",
+              "payment",
+              "refund",
+              "deposit_received",
+              "deposit_applied",
+              "deposit_refunded",
+              "reversal"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^\\d{1,10}(\\.\\d{1,2})?$",
+            "example": "8000.00"
+          },
+          "category": {
+            "enum": [
+              "late",
+              "fuel",
+              "damage",
+              "mileage",
+              "towing",
+              "cancellation",
+              "other"
+            ]
+          },
+          "method": {
+            "enum": [
+              "cash",
+              "bank_transfer",
+              "terminal",
+              "cheque",
+              "other"
+            ]
+          },
+          "reference": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Offset and seconds required."
+          },
+          "reverses_id": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "idempotency_key",
+          "kind",
+          "reason",
+          "effective_at"
+        ],
+        "description": "Positive amount except reversal requires reverses_id. Real cashflow requires method. Refund/application/deposit refund/reversal require finance.manage; collection payments.collect; charge rentals.manage or finance.manage. Reversal links to one unreversed non-base entry. Cannot reverse reversals or create negative held funds/net payments. Refund <= collected cash; deposit application <=held and debt."
+      },
+      "LedgerEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "financial_account_id": {
+            "type": "integer"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "category": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer"
+          },
+          "charge_delta": {
+            "type": "integer"
+          },
+          "payment_delta": {
+            "type": "integer"
+          },
+          "deposit_delta": {
+            "type": "integer"
+          },
+          "reverses_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "method": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reference": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Offset and seconds required."
+          },
+          "actor_id": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Offset and seconds required."
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "amount_cents",
+          "charge_delta",
+          "payment_delta",
+          "deposit_delta"
+        ],
+        "description": ""
+      },
+      "LedgerTotals": {
+        "type": "object",
+        "properties": {
+          "charges_cents": {
+            "type": "integer"
+          },
+          "payments_cents": {
+            "type": "integer"
+          },
+          "held_cents": {
+            "type": "integer"
+          },
+          "cash_payments_cents": {
+            "type": "integer"
+          },
+          "outstanding_cents": {
+            "type": "integer"
+          },
+          "credit_cents": {
+            "type": "integer"
+          }
+        },
+        "required": [],
+        "description": "Deposits held separately; cash_payments excludes applied deposits. Debt=max(charges-payments,0); credit=max(payments-charges,0)."
+      },
+      "LedgerRead": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "totals": {
+            "$ref": "#/components/schemas/LedgerTotals"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LedgerEntry"
+            }
+          }
+        },
+        "required": [
+          "account",
+          "totals",
+          "entries"
+        ],
+        "description": ""
+      },
+      "Rental": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "reservation_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "customer_id": {
+            "type": "integer"
+          },
+          "driver_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "vehicle_id": {
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "active",
+              "returned",
+              "cancelled"
+            ]
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Offset and seconds required."
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Offset and seconds required."
+          },
+          "handed_over_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "returned_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "contract_version": {
+            "type": "integer"
+          },
+          "preparation_minutes": {
+            "type": "integer"
+          },
+          "pricing": {
+            "type": "object",
+            "description": "Snapshot of rates, basis, quantity, base/discount/total_cents, reason, half_up rounding."
+          },
+          "snapshot": {
+            "type": "object",
+            "description": "Agreed customer, driver, vehicle details."
+          },
+          "inspections": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "version",
+          "contract_version",
+          "pricing",
+          "snapshot"
+        ],
+        "description": ""
       }
     }
   }

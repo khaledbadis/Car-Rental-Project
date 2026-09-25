@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\RentalController;
 use App\Http\Controllers\SessionController;
 use App\Livewire\Audit;
 use App\Livewire\Availability;
 use App\Livewire\CatalogDirectory;
 use App\Livewire\CatalogProfile;
 use App\Livewire\Preferences;
+use App\Livewire\RentalProfile;
+use App\Livewire\Rentals;
 use App\Livewire\ReservationEditor;
 use App\Livewire\Reservations;
 use App\Livewire\Settings;
@@ -45,4 +48,10 @@ Route::middleware(['auth', 'account'])->group(function () {
     Route::get('/reservations', Reservations::class)->name('reservations');
     Route::get('/reservations/{id}', ReservationEditor::class)->whereNumber('id')->name('reservations.show');
     Route::get('/availability', Availability::class)->name('availability');
+});
+
+Route::middleware(['auth', 'account'])->group(function () {
+    Route::get('/rentals', Rentals::class)->name('rentals');
+    Route::get('/rentals/{id}', RentalProfile::class)->whereNumber('id')->name('rentals.show');
+    Route::get('/inspection-photos/{id}', [RentalController::class, 'download'])->whereNumber('id')->name('inspection-photos.download');
 });

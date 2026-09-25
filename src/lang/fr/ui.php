@@ -64,6 +64,22 @@ return [
     'login_hint' => 'Connectez-vous avec votre compte professionnel.',
     'recovery_hint' => 'Besoin d’accès ? Contactez votre responsable.',
     'actions' => [
+        'rental.created' => 'Location · créée',
+        'rental.handover' => 'Location · départ',
+        'rental.return' => 'Location · retour',
+        'rental.extended' => 'Location · prolongée',
+        'rental.cancelled' => 'Location · annulée',
+        'rental.document_override' => 'Location · dérogation documentaire',
+        'rental.mileage_corrected' => 'Location · correction kilométrage',
+        'inspection.photo_added' => 'Constat · photo ajoutée',
+        'ledger.charge' => 'Écriture · frais',
+        'ledger.payment' => 'Écriture · paiement',
+        'ledger.refund' => 'Écriture · remboursement',
+        'ledger.deposit_received' => 'Écriture · caution reçue',
+        'ledger.deposit_applied' => 'Écriture · caution affectée',
+        'ledger.deposit_refunded' => 'Écriture · caution remboursée',
+        'ledger.reversal' => 'Écriture · contrepassation',
+
         'reservation.created' => 'Réservation · créée',
         'reservation.updated' => 'Réservation · modifiée / réaffectée',
         'reservation.cancelled' => 'Réservation · annulée',
@@ -90,4 +106,5 @@ return [
     'availability' => 'Disponibilité et blocages',
     'reservations_hint' => 'Demandes, confirmations et planning hebdomadaire.',
     'availability_hint' => 'Trouver un véhicule et gérer les blocages.',
+    'rentals' => 'Locations', 'rentals_hint' => 'Départs, retours, paiements et cautions.',
 ];

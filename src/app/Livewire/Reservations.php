@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Rental;
 use App\Modules\Reservations\Actions;
 use Carbon\CarbonImmutable;
 use Livewire\Component;
@@ -47,6 +48,8 @@ class Reservations extends Component
         $records = $this->mode === 'calendar' ? $query->get() : $query->paginate(15);
         $blocks = $this->mode === 'calendar' ? $a->blocks(auth()->user())->whereNull('released_at')->where('starts_at', '<', $days->last()->addDay()->utc())->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', $days->first()->utc()))->get() : collect();
 
-        return view('livewire.reservations', compact('records', 'days', 'blocks', 'a'))->layout('components.layouts.app');
+        $rentals = $this->mode === 'calendar' && auth()->user()->can('rentals.view') ? Rental::with(['customer:id,name', 'vehicle:id,registration'])->whereIn('status', ['draft', 'active'])->where('starts_at', '<', $days->last()->addDay()->utc())->where(fn ($q) => $q->whereRaw("ends_at + preparation_minutes * interval '1 minute' > ?", [$days->first()->utc()])->orWhere('status', 'active'))->get() : collect();
+
+        return view('livewire.reservations', compact('records', 'days', 'blocks', 'a', 'rentals'))->layout('components.layouts.app');
     }
 }

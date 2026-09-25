@@ -17,5 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $e->render(function (Conflict $error, Request $request) {
             return response()->json(['message' => $error->getMessage(), 'code' => $error->errorCode, 'details' => $error->details], 409);
         });
+        $e->render(function (App\Modules\Rentals\Conflict $error, Request $request) {
+            return response()->json(['message' => $error->getMessage(), 'code' => $error->errorCode, 'details' => $error->details], 409);
+        });
         $e->shouldRenderJsonWhen(fn (Request $r) => $r->is('api/*') || $r->expectsJson());
     })->create();

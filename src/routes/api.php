@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\FoundationController as Api;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\RentalController;
 use App\Http\Controllers\ReservationController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,4 +49,20 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'account', 'throttle:api'])->gr
     Route::get('blocks', [$c, 'blocks']);
     Route::post('blocks', [$c, 'block']);
     Route::post('blocks/{id}/release', [$c, 'release'])->whereNumber('id');
+});
+
+Route::prefix('v1')->middleware(['auth:sanctum', 'account', 'throttle:api'])->group(function () {
+    $c = RentalController::class;
+    Route::get('rentals', [$c, 'index']);
+    Route::post('rentals', [$c, 'create']);
+    Route::get('rentals/{id}', [$c, 'show'])->whereNumber('id');
+    foreach (['handover' => 'handover', 'return' => 'checkin', 'extend' => 'extend', 'cancel' => 'cancel'] as $path => $method) {
+        Route::post('rentals/{id}/'.$path, [$c, $method])->whereNumber('id');
+    }
+    foreach (['rental', 'reservation'] as $owner) {
+        Route::get($owner.'s/{id}/ledger', [$c, 'ledger'])->whereNumber('id')->defaults('owner', $owner);
+        Route::post($owner.'s/{id}/ledger', [$c, 'post'])->whereNumber('id')->defaults('owner', $owner);
+    }
+    Route::post('inspections/{id}/photos', [$c, 'photo'])->whereNumber('id');
+    Route::get('inspection-photos/{id}', [$c, 'download'])->whereNumber('id');
 });

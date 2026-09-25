@@ -64,6 +64,22 @@ return [
     'login_hint' => 'Sign in with your staff account.',
     'recovery_hint' => 'Need access? Contact your manager.',
     'actions' => [
+        'rental.created' => 'Rental · created',
+        'rental.handover' => 'Rental · handed over',
+        'rental.return' => 'Rental · returned',
+        'rental.extended' => 'Rental · extended',
+        'rental.cancelled' => 'Rental · cancelled',
+        'rental.document_override' => 'Rental · document override',
+        'rental.mileage_corrected' => 'Rental · mileage correction',
+        'inspection.photo_added' => 'Inspection · photo added',
+        'ledger.charge' => 'Ledger · charge',
+        'ledger.payment' => 'Ledger · payment',
+        'ledger.refund' => 'Ledger · payment refund',
+        'ledger.deposit_received' => 'Ledger · deposit received',
+        'ledger.deposit_applied' => 'Ledger · deposit applied',
+        'ledger.deposit_refunded' => 'Ledger · deposit refunded',
+        'ledger.reversal' => 'Ledger · reversal',
+
         'reservation.created' => 'Reservation · created',
         'reservation.updated' => 'Reservation · updated / reassigned',
         'reservation.cancelled' => 'Reservation · cancelled',
@@ -90,4 +106,5 @@ return [
     'availability' => 'Availability & blocks',
     'reservations_hint' => 'Inquiries, confirmations and the weekly schedule.',
     'availability_hint' => 'Find a vehicle and manage operational blocks.',
+    'rentals' => 'Rentals', 'rentals_hint' => 'Handover, returns, payments and deposits.',
 ];

@@ -23,4 +23,7 @@
 @if(auth()->user()->can('reservations.manage')&&!in_array($record?->status,['cancelled','converted']))<div class="mt-6 flex flex-wrap gap-3"><flux:button type="submit" variant="primary" icon="check" wire:loading.attr="disabled">{{ __('ui.save') }}</flux:button>@if($id)@can('reservations.cancel')<flux:button type="button" wire:click="cancel" wire:confirm="{{ __('booking.cancel_confirm') }}" variant="danger" icon="x-mark" wire:loading.attr="disabled">{{ __('booking.cancel') }}</flux:button>@endcan @endif</div>@endif
 </fieldset></form>
 <p class="mt-4 text-sm text-zinc-500">{{ __('booking.tentative_hint') }}</p>
+@if($id)@can('rentals.view')<livewire:ledger-panel owner="reservation" :owner-id="$id" :key="'reservation-ledger-'.$id"/>@endcan
+@if($record?->status==='confirmed')@can('rentals.manage')<div class="mt-6"><flux:modal.trigger name="convert-rental"><flux:button variant="primary" icon="key">{{ __('rental.convert') }}</flux:button></flux:modal.trigger><flux:modal name="convert-rental" class="w-full max-w-3xl"><livewire:rental-create :reservation-id="$id"/></flux:modal></div>@endcan @endif
+@if($record?->status==='converted')@php($rentalId=\App\Models\Rental::where('reservation_id',$id)->value('id'))@if($rentalId)<a class="mt-5 block text-teal-700 dark:text-teal-300" href="{{ route('rentals.show',$rentalId) }}">{{ __('rental.rental') }} #{{ $rentalId }}</a>@endif @endif @endif
 </div>

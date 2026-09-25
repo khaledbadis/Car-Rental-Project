@@ -64,6 +64,22 @@ return [
     'login_hint' => 'سجّل الدخول بحساب الموظف.',
     'recovery_hint' => 'تحتاج إلى الوصول؟ تواصل مع مديرك.',
     'actions' => [
+        'rental.created' => 'تأجير · إنشاء',
+        'rental.handover' => 'تأجير · تسليم',
+        'rental.return' => 'تأجير · إرجاع',
+        'rental.extended' => 'تأجير · تمديد',
+        'rental.cancelled' => 'تأجير · إلغاء',
+        'rental.document_override' => 'تأجير · استثناء الوثائق',
+        'rental.mileage_corrected' => 'تأجير · تصحيح العداد',
+        'inspection.photo_added' => 'فحص · إضافة صورة',
+        'ledger.charge' => 'قيد · رسوم',
+        'ledger.payment' => 'قيد · دفعة',
+        'ledger.refund' => 'قيد · استرداد دفعة',
+        'ledger.deposit_received' => 'قيد · استلام وديعة',
+        'ledger.deposit_applied' => 'قيد · تطبيق وديعة',
+        'ledger.deposit_refunded' => 'قيد · رد وديعة',
+        'ledger.reversal' => 'قيد · عكس',
+
         'reservation.created' => 'حجز · إنشاء',
         'reservation.updated' => 'حجز · تعديل / إعادة تعيين',
         'reservation.cancelled' => 'حجز · إلغاء',
@@ -90,4 +106,5 @@ return [
     'availability' => 'التوفر والحظر',
     'reservations_hint' => 'الاستفسارات والتأكيدات والجدول الأسبوعي.',
     'availability_hint' => 'البحث عن مركبة وإدارة فترات الحظر.',
+    'rentals' => 'التأجيرات', 'rentals_hint' => 'التسليم والإرجاع والمدفوعات والودائع.',
 ];

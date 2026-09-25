@@ -123,6 +123,8 @@ First usable release:
 - Link urgent items to the vehicle, rental, customer, or reservation needing action. Highlight overdue rentals affecting another booking.
 - Date-filtered operational lists and basic rental/payment summaries.
 
+Dashboard implementation decision (24 September 2026): deliver the operational dashboard in Phase 5, after Phase 4 provides rental and ledger data. The primary view must show the agency situation, not just navigation cards. Use cards for fleet counts, today’s activity, debt and held deposits; an actionable urgency list for overdue returns, pickup delays, booking conflicts and expiring documents; a fleet-state chart; and separately labeled revenue and collections trends over a selected period. Display actual data only, distinguish zero values from unavailable data, respect role scope, and provide table/list alternatives to charts. Do not label deposits as revenue. Detailed profitability and maintenance/expense analytics remain Phase 7.
+
 Later reporting:
 
 - Rental revenue, cash collections, rental count, most rented vehicles, utilization, maintenance costs, and vehicle revenue versus expenses.
@@ -235,19 +237,21 @@ Implementation completed 24 September 2026. See [Phase 3 verification](docs/phas
 
 ### Phase 4 — Rental operations and financial records
 
-- [ ] Implement reservation conversion and walk-in rentals with handover prerequisites.
-- [ ] Implement price snapshots, discounts, inspections, optional photos, and extensions.
-- [ ] Implement charges, advances, payments, deposits, refunds/reversals, and debt visibility.
-- [ ] Implement returns, preparation release, overdue detection, and affected-booking warnings.
-- [ ] Add equivalent API operations and retry protection.
+- [x] Implement reservation conversion and walk-in rentals with handover prerequisites.
+- [x] Implement price snapshots, discounts, inspections, optional photos, and extensions.
+- [x] Implement charges, advances, payments, deposits, refunds/reversals, and debt visibility.
+- [x] Implement returns, preparation release, overdue detection, and affected-booking warnings.
+- [x] Add equivalent API operations and retry protection.
 
 Acceptance: expired driver licences block even a Manager; a 10% agent base discount succeeds and a larger one fails; additional charges remain undiscounted; complete a rental with advance payment, handover, deposit, damage charge, deposit application/refund, and return; financial totals reconcile. A rental can close with visible debt. Repeated submission produces one financial transaction. A conflicting extension fails without cancelling the next reservation. Missing required handover details block activation. Overdue vehicles remain unavailable after their scheduled end.
+
+Implementation completed 25 September 2026. See [Phase 4 verification](docs/phase-4-verification.md). Agreement data snapshots/versions are implemented; printable contracts, numbered receipts, the operational dashboard and expanded staff preferences remain Phase 5.
 
 ### Phase 5 — First usable release and cutover
 
 - [ ] Implement a replaceable bilingual contract template with fictional agency content and physical signature areas; retain a clear sample marker until the owner substitutes final content.
 - [ ] Implement stable numbered receipts, contract snapshots/versions, and print layouts.
-- [ ] Complete operational dashboard, date filters, and basic finance/overdue lists.
+- [ ] Replace the quick-access landing page with an operational agency dashboard: role-scoped KPI cards, urgent actions, pickups/returns, overdue/conflicting commitments, document alerts, debt and held-deposit summaries; add fleet-status and time-series revenue/collections charts, date filters, clear empty states and links to underlying records.
 - [ ] Rehearse migration of vehicles, customers, active rentals, upcoming reservations, and opening unpaid balances.
 - [ ] Provision staging and production VM/Docker deployment, HTTPS, monitoring, backups, and restore procedure.
 - [ ] Expand Preferences with editable full name, phone, email, address and profile picture; introduce immutable unique usernames and preserve audit attribution.

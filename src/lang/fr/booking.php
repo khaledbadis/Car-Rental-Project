@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'customer_locked' => 'Une réservation avec des écritures ne peut pas être transférée à un autre client.',
     'reservations' => 'Réservations',
     'reservation' => 'Réservation',
     'availability' => 'Disponibilité et blocages',
@@ -74,4 +75,5 @@ return [
     'invalid_date' => 'Saisissez une date et une heure valides.',
     'tentative_hint' => 'Les demandes provisoires ne réservent aucun véhicule. Une confirmation exige un véhicule précis.',
     'linked' => 'Réservations et engagements',
+    'rental' => 'Location',
 ];

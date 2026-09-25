@@ -3,6 +3,8 @@
 namespace App\Modules\Reservations;
 
 use App\Models\Customer;
+use App\Models\FinancialAccount;
+use App\Models\Rental;
 use App\Models\Reservation;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -45,12 +47,13 @@ class Actions
         return [CarbonImmutable::parse($v['starts_at'])->utc(), empty($v['ends_at']) ? null : CarbonImmutable::parse($v['ends_at'])->utc()];
     }
 
-    public function conflicts(int $vehicle, CarbonImmutable $start, ?CarbonImmutable $end, ?int $except = null)
+    public function conflicts(int $vehicle, CarbonImmutable $start, ?CarbonImmutable $end, ?int $except = null, ?int $exceptRental = null)
     {
         return VehicleCommitment::where('vehicle_id', $vehicle)->whereNull('released_at')
             ->when($except, fn ($q) => $q->where(fn ($q) => $q->whereNull('reservation_id')->orWhere('reservation_id', '!=', $except)))
+            ->when($exceptRental, fn ($q) => $q->where(fn ($q) => $q->whereNull('rental_id')->orWhere('rental_id', '!=', $exceptRental)))
             ->when($end, fn ($q) => $q->where('starts_at', '<', $end))
-            ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', $start))->orderBy('starts_at')->get();
+            ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', $start)->orWhereIn('rental_id', Rental::where('status', 'active')->where('ends_at', '<', now())->select('id')))->orderBy('starts_at')->get();
     }
 
     public function documentIssues(Vehicle $vehicle, CarbonImmutable $end): array
@@ -125,6 +128,9 @@ class Actions
             }
             if ($r->status === 'confirmed' && $v['status'] === 'tentative') {
                 throw new Conflict('cannot_unconfirm');
+            }
+            if ($id && $r->customer_id !== (int) $v['customer_id'] && FinancialAccount::where('reservation_id', $id)->whereHas('entries')->exists()) {
+                throw new Conflict('customer_locked');
             }
             $customer = Customer::lockForUpdate()->findOrFail($v['customer_id']);
             if ($customer->archived_at) {
@@ -241,7 +247,7 @@ class Actions
             $this->lock();
             $b = VehicleCommitment::lockForUpdate()->findOrFail($id);
             $this->lock([$b->vehicle_id]);
-            if ($b->kind === 'reservation') {
+            if (in_array($b->kind, ['reservation', 'rental'])) {
                 throw new Conflict('closed');
             }
             if (in_array($b->kind, ['maintenance', 'administrative']) || $b->emergency) {
@@ -262,7 +268,7 @@ class Actions
     {
         $this->authorize($u);
 
-        return VehicleCommitment::with('vehicle:id,registration')->where('kind', '!=', 'reservation')->orderByDesc('id');
+        return VehicleCommitment::with('vehicle:id,registration')->whereNotIn('kind', ['reservation', 'rental'])->orderByDesc('id');
     }
 
     public function affected(Reservation $r)

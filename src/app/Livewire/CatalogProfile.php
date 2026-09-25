@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Customer;
+use App\Models\FinancialAccount;
 use App\Models\VehicleCategory;
 use App\Modules\Catalog\Actions;
 use Illuminate\Validation\ValidationException;
@@ -112,6 +113,6 @@ class CatalogProfile extends Component
         $a = app(Actions::class);
         $record = $a->find(auth()->user(), $this->kind, $this->id);
 
-        return view('livewire.catalog-profile', ['record' => $record, 'bookings' => auth()->user()->can('reservations.view') ? app(\App\Modules\Reservations\Actions::class)->query(auth()->user(), [$this->kind.'_id' => $this->id])->get() : collect(), 'blocks' => $this->kind === 'vehicle' && auth()->user()->can('reservations.view') ? app(\App\Modules\Reservations\Actions::class)->blocks(auth()->user())->where('vehicle_id', $this->id)->whereNull('released_at')->get() : collect(), 'categories' => VehicleCategory::orderBy('name')->get(), 'drivers' => $this->kind === 'customer' ? Customer::where('type', 'individual')->whereNull('archived_at')->orderBy('name')->get(['id', 'name']) : collect(), 'duplicates' => $this->kind === 'customer' ? $a->duplicates(auth()->user(), array_intersect_key($this->form, array_flip(['name', 'phone', 'identity_number', 'licence_number'])), $this->id) : collect()])->layout('components.layouts.app');
+        return view('livewire.catalog-profile', ['record' => $record, 'rentals' => auth()->user()->can('rentals.view') ? app(\App\Modules\Rentals\Actions::class)->query(auth()->user(), [$this->kind.'_id' => $this->id])->get() : collect(), 'accounts' => $this->kind === 'customer' && auth()->user()->can('rentals.view') ? FinancialAccount::where('customer_id', $this->id)->get() : collect(), 'bookings' => auth()->user()->can('reservations.view') ? app(\App\Modules\Reservations\Actions::class)->query(auth()->user(), [$this->kind.'_id' => $this->id])->get() : collect(), 'blocks' => $this->kind === 'vehicle' && auth()->user()->can('reservations.view') ? app(\App\Modules\Reservations\Actions::class)->blocks(auth()->user())->where('vehicle_id', $this->id)->whereNull('released_at')->get() : collect(), 'categories' => VehicleCategory::orderBy('name')->get(), 'drivers' => $this->kind === 'customer' ? Customer::where('type', 'individual')->whereNull('archived_at')->orderBy('name')->get(['id', 'name']) : collect(), 'duplicates' => $this->kind === 'customer' ? $a->duplicates(auth()->user(), array_intersect_key($this->form, array_flip(['name', 'phone', 'identity_number', 'licence_number'])), $this->id) : collect()])->layout('components.layouts.app');
     }
 }

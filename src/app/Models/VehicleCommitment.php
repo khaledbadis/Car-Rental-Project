@@ -22,4 +22,16 @@ class VehicleCommitment extends Model
     {
         return $this->belongsTo(Reservation::class);
     }
+
+    public function rental()
+    {
+        return $this->belongsTo(Rental::class);
+    }
+
+    protected $appends = ['physical_overdue'];
+
+    public function getPhysicalOverdueAttribute(): bool
+    {
+        return $this->rental_id && $this->rental?->status === 'active' && $this->rental->ends_at->isPast();
+    }
 }

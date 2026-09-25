@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'customer_locked' => 'A reservation with posted transactions cannot be moved to another customer.',
     'reservations' => 'Reservations',
     'reservation' => 'Reservation',
     'availability' => 'Availability & blocks',
@@ -74,4 +75,5 @@ return [
     'invalid_date' => 'Enter a valid date and time.',
     'tentative_hint' => 'Tentative inquiries do not reserve inventory. Confirmation requires a specific vehicle.',
     'linked' => 'Reservations and commitments',
+    'rental' => 'Rental',
 ];
