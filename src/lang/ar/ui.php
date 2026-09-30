@@ -64,6 +64,7 @@ return [
     'login_hint' => 'سجّل الدخول بحساب الموظف.',
     'recovery_hint' => 'تحتاج إلى الوصول؟ تواصل مع مديرك.',
     'actions' => [
+        'profile.updated' => 'تحديث الملف الشخصي',
         'rental.created' => 'تأجير · إنشاء',
         'rental.handover' => 'تأجير · تسليم',
         'rental.return' => 'تأجير · إرجاع',

@@ -10,6 +10,11 @@ class LedgerEntry extends Model
 
     protected $guarded = ['id'];
 
+    public function receipt()
+    {
+        return $this->hasOne(Receipt::class);
+    }
+
     protected function casts(): array
     {
         return ['effective_at' => 'immutable_datetime', 'created_at' => 'immutable_datetime'];

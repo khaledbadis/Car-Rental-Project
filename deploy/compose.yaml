@@ -1,0 +1,54 @@
+name: rental-production
+x-app: &app
+  image: rental-release:${RELEASE_TAG:-local}
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile.production
+    target: app
+  env_file: .env
+  restart: unless-stopped
+  stop_grace_period: 2m
+  volumes:
+    - attachments:/var/www/html/storage/app
+  tmpfs:
+    - /var/www/html/storage/framework:uid=33,gid=33,mode=0770
+    - /var/www/html/storage/logs:uid=33,gid=33,mode=0770
+    - /var/www/html/bootstrap/cache:uid=33,gid=33,mode=0770
+  depends_on:
+    db:
+      condition: service_healthy
+services:
+  app:
+    <<: *app
+  worker:
+    <<: *app
+    command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=90"]
+  scheduler:
+    <<: *app
+    command: ["php", "artisan", "schedule:work"]
+  web:
+    image: rental-web:${RELEASE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.production
+      target: web
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Set the real domain}
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes: ["caddy-data:/data", "caddy-config:/config"]
+    depends_on: [app]
+    restart: unless-stopped
+  db:
+    image: postgres:17-bookworm
+    env_file: db.env
+    volumes: ["database:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+volumes:
+  database:
+  attachments:
+  caddy-data:
+  caddy-config:

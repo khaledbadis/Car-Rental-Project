@@ -15,7 +15,7 @@ class Actions
 {
     public function audit(?User $actor, string $action, string $type, string|int $id, ?array $before, ?array $after, ?string $reason = null): void
     {
-        DB::table('audit_events')->insert(['actor_id' => $actor?->id, 'action' => $action, 'subject_type' => $type, 'subject_id' => (string) $id, 'before' => $before === null ? null : json_encode($before), 'after' => $after === null ? null : json_encode($after), 'reason' => $reason, 'created_at' => now()]);
+        DB::table('audit_events')->insert(['actor_id' => $actor?->id, 'actor_username' => $actor?->username, 'action' => $action, 'subject_type' => $type, 'subject_id' => (string) $id, 'before' => $before === null ? null : json_encode($before), 'after' => $after === null ? null : json_encode($after), 'reason' => $reason, 'created_at' => now()]);
     }
 
     public function staff(User $actor): mixed
@@ -36,7 +36,7 @@ class Actions
             // Serialize staff administration, including simultaneous demotions of different managers.
             DB::table('agency_settings')->where('id', 1)->lockForUpdate()->first();
             $user = $id ? User::lockForUpdate()->findOrFail($id) : new User;
-            $v = Validator::make(Input::normalize($input), ['name' => 'required|string|max:120', 'email' => ['required', 'email', 'max:190', Rule::unique('users')->ignore($user->id)], 'role' => ['required', Rule::in(array_keys(config('access.roles')))], 'active' => 'required|boolean', 'password' => [$id ? 'nullable' : 'required', 'string', 'min:12', 'max:128'], 'reason' => 'required|string|max:500'])->validate();
+            $v = Validator::make(Input::normalize($input), ['username' => 'prohibited', 'name' => 'required|string|max:120', 'email' => ['required', 'email', 'max:190', Rule::unique('users')->ignore($user->id)], 'role' => ['required', Rule::in(array_keys(config('access.roles')))], 'active' => 'required|boolean', 'password' => [$id ? 'nullable' : 'required', 'string', 'min:12', 'max:128'], 'reason' => 'required|string|max:500'])->validate();
             if ($user->exists && $user->role === 'manager' && $user->active && (! $v['active'] || $v['role'] !== 'manager') && User::where('role', 'manager')->where('active', true)->count() <= 1) {
                 throw ValidationException::withMessages(['role' => __('ui.last_manager')]);
             }
@@ -116,6 +116,6 @@ class Actions
     {
         Gate::forUser($actor)->authorize('audit.view');
 
-        return DB::table('audit_events')->leftJoin('users', 'users.id', '=', 'audit_events.actor_id')->select('audit_events.*', 'users.name as actor_name')->orderByDesc('audit_events.id')->paginate(20);
+        return DB::table('audit_events')->leftJoin('users', 'users.id', '=', 'audit_events.actor_id')->select('audit_events.*', 'users.name as actor_name', 'users.username as current_username')->orderByDesc('audit_events.id')->paginate(20);
     }
 }

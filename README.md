@@ -98,7 +98,7 @@ Schedule writes use transactions, the shared agency lock and vehicle locks in so
 
 API dates require explicit offsets and seconds (`2027-01-10T10:00:00+01:00`); web forms use agency-local time. Conflict responses use HTTP 409 with stable `code`, localized `message` and optional details. See [OpenAPI](docs/openapi.json) and [Phase 3 verification](docs/phase-3-verification.md).
 
-Expanded staff profile editing (contact information, photo, editable full name and immutable username) is planned for Phase 5 before staff acceptance.
+Preferences now supports editable full name, contact details and private profile images. The permanent staff-ID-based username cannot change; email remains the login identifier. Historical audit attribution is preserved.
 
 ## Rental operations and finances
 
@@ -114,10 +114,12 @@ Optional, clearly fictional local fixtures (requires the existing demo accounts)
 docker compose exec app php artisan db:seed --class=RentalDemoSeeder
 ```
 
-This adds RENTALDEMO01 and Fictional Rental Driver with synthetic placeholder documents. It does not replace existing records. See [Phase 4 verification](docs/phase-4-verification.md) and [OpenAPI](docs/openapi.json). Printable contracts and numbered receipts, an operational dashboard with charts/cards, and expanded user profiles are planned for Phase 5.
+This adds RENTALDEMO01 and Fictional Rental Driver with synthetic placeholder documents. It does not replace existing records. See [Phase 4 verification](docs/phase-4-verification.md) and [OpenAPI](docs/openapi.json). Phase 5 adds a live operational dashboard, expanded profiles and bilingual printable contracts/numbered receipts. See [Phase 5 verification](docs/phase-5-verification.md) for behavior and remaining launch gates.
 
 ## Deployment boundary
 
-This Compose configuration is a local development environment with a PHP development server and local database credentials. It is not a production deployment. Phase 5 will supply the dedicated VM, production web runtime/reverse proxy, HTTPS, secrets, restricted DB credentials, backups, restore test and monitoring. No external infrastructure has been changed.
+This Compose configuration is a local development environment with a PHP development server and local database credentials. It is not a production deployment. Production FPM/Caddy images, Compose configuration, restricted-role setup and backup/restore procedure are prepared in [deploy](deploy/README.md). VM provisioning is explicitly deferred. Real-data import, measured restore, monitoring setup and staff cutover remain open. No external infrastructure has been changed.
 
 Official references used for setup: [Laravel releases](https://laravel.com/framework/docs/releases), [Livewire installation](https://livewire.laravel.com/docs/4.x/installation), [Flux installation](https://fluxui.dev/docs/installation).
+
+The homepage now summarizes agency operations, with date filters and separate revenue/collection trends for Manager/Finance. Receipt links appear in the rental/reservation ledger; agreement print links appear on each rental version. Browser Print / Save as PDF handles document output. Sample agency text lives in src/config/contract.php and remains clearly marked until replaced.

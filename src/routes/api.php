@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\FoundationController as Api;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\ReleaseController;
 use App\Http\Controllers\RentalController;
 use App\Http\Controllers\ReservationController;
 use Illuminate\Support\Facades\Route;
@@ -65,4 +66,13 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'account', 'throttle:api'])->gr
     }
     Route::post('inspections/{id}/photos', [$c, 'photo'])->whereNumber('id');
     Route::get('inspection-photos/{id}', [$c, 'download'])->whereNumber('id');
+});
+
+Route::prefix('v1')->middleware(['auth:sanctum', 'account', 'throttle:api'])->group(function () {
+    $c = ReleaseController::class;
+    Route::get('dashboard', [$c, 'dashboard']);
+    Route::post('me/profile', [$c, 'profile']);
+    Route::get('me/avatar', [$c, 'avatar']);
+    Route::get('receipts/{id}', [$c, 'receipt'])->whereNumber('id');
+    Route::get('rentals/{id}/contracts/{version}', [$c, 'contract'])->whereNumber(['id', 'version']);
 });

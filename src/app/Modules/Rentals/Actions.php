@@ -77,7 +77,7 @@ class Actions
 
     private function contract(User $u, Rental $r, string $reason): void
     {
-        DB::table('rental_versions')->insert(['rental_id' => $r->id, 'number' => $r->contract_version, 'snapshot' => json_encode(['parties' => $r->snapshot, 'pricing' => $r->pricing, 'starts_at' => $r->starts_at->toIso8601String(), 'ends_at' => $r->ends_at->toIso8601String(), 'mileage_allowance' => $r->mileage_allowance, 'terms' => $r->terms], JSON_THROW_ON_ERROR), 'actor_id' => $u->id, 'reason' => $reason, 'created_at' => now()]);
+        DB::table('rental_versions')->insert(['rental_id' => $r->id, 'number' => $r->contract_version, 'snapshot' => json_encode(['template' => config('contract'), 'parties' => $r->snapshot, 'pricing' => $r->pricing, 'starts_at' => $r->starts_at->toIso8601String(), 'ends_at' => $r->ends_at->toIso8601String(), 'mileage_allowance' => $r->mileage_allowance, 'terms' => $r->terms], JSON_THROW_ON_ERROR), 'actor_id' => $u->id, 'reason' => $reason, 'created_at' => now()]);
     }
 
     public function create(User $u, array $input): Rental

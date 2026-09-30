@@ -1,0 +1,27 @@
+FROM php:8.4-fpm-bookworm AS php
+RUN apt-get update && apt-get install -y --no-install-recommends libpq-dev libicu-dev libzip-dev unzip && docker-php-ext-install pdo_pgsql intl zip pcntl bcmath opcache && rm -rf /var/lib/apt/lists/*
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+WORKDIR /var/www/html
+COPY src/composer.json src/composer.lock ./
+RUN composer install --no-dev --prefer-dist --no-interaction --no-scripts
+FROM node:22-bookworm-slim AS frontend
+WORKDIR /build
+COPY src/package*.json ./
+RUN npm ci
+COPY src/resources ./resources
+COPY src/vite.config.js ./
+COPY --from=php /var/www/html/vendor ./vendor
+RUN npm run build
+FROM php AS app
+COPY src/ ./
+COPY --from=frontend /build/public/build ./public/build
+RUN mkdir -p storage/app/private storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache && composer dump-autoload --no-dev --optimize && chown -R www-data:www-data storage bootstrap/cache
+COPY docker/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+COPY deploy/php.ini /usr/local/etc/php/conf.d/production.ini
+COPY --chmod=755 deploy/entrypoint.sh /usr/local/bin/rental-entrypoint
+USER www-data
+ENTRYPOINT ["rental-entrypoint"]
+CMD ["php-fpm"]
+FROM caddy:2 AS web
+COPY --from=app /var/www/html/public /var/www/html/public
+COPY deploy/Caddyfile /etc/caddy/Caddyfile

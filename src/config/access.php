@@ -1,7 +1,7 @@
 <?php
 
 return ['roles' => [
-    'manager' => ['rentals.view', 'reservations.view', 'fleet.view', 'fleet.archive', 'customers.view', 'customers.archive', 'customer-documents.view', 'documents.remove', 'staff.manage', 'settings.manage', 'audit.view', 'fleet.manage', 'blocks.manage', 'customers.manage', 'reservations.manage', 'reservations.cancel', 'rentals.manage', 'payments.collect', 'finance.manage', 'discount.limited', 'pricing.override', 'vehicle-documents.override'],
-    'agent' => ['rentals.view', 'reservations.view', 'fleet.view', 'customers.view', 'customer-documents.view', 'blocks.manage', 'customers.manage', 'reservations.manage', 'reservations.cancel', 'rentals.manage', 'payments.collect', 'discount.limited'],
-    'finance' => ['rentals.view', 'reservations.view', 'fleet.view', 'customers.view', 'payments.collect', 'finance.manage'],
+    'manager' => ['contracts.view', 'dashboard.view', 'profile.manage', 'receipts.view', 'rentals.view', 'reservations.view', 'fleet.view', 'fleet.archive', 'customers.view', 'customers.archive', 'customer-documents.view', 'documents.remove', 'staff.manage', 'settings.manage', 'audit.view', 'fleet.manage', 'blocks.manage', 'customers.manage', 'reservations.manage', 'reservations.cancel', 'rentals.manage', 'payments.collect', 'finance.manage', 'discount.limited', 'pricing.override', 'vehicle-documents.override'],
+    'agent' => ['contracts.view', 'dashboard.view', 'profile.manage', 'receipts.view', 'rentals.view', 'reservations.view', 'fleet.view', 'customers.view', 'customer-documents.view', 'blocks.manage', 'customers.manage', 'reservations.manage', 'reservations.cancel', 'rentals.manage', 'payments.collect', 'discount.limited'],
+    'finance' => ['dashboard.view', 'profile.manage', 'receipts.view', 'rentals.view', 'reservations.view', 'fleet.view', 'customers.view', 'payments.collect', 'finance.manage'],
 ]];

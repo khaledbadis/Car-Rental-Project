@@ -1,6 +1,6 @@
 # Car Rental Management — Project Specification
 
-Status: Phase 3 implemented · 24 September 2026
+Status: Phase 5 application features implemented; deployment preparation complete; VM provisioning deferred · 25 September 2026
 
 Sources: [Client brief](client-brief.md), [Client answers](QA.txt), [Resolved decisions](Decisions.txt), and project owner's technical requirements. The owner's 20 September instruction authorizes fictional documents and migration samples in place of waiting for client materials; placeholders must remain identifiable and replaceable. This document defines scope and implementation gates; it does not authorize implementing every phase at once.
 
@@ -50,7 +50,7 @@ Audit sensitive actions with actor, entity, action, timestamp, before/after valu
 
 ## 4. Functional requirements
 
-### Staff profiles — planned for Phase 5
+### Staff profiles — implemented in Phase 5
 
 Expand Preferences before staff acceptance/cutover: editable full name, contact phone, email, postal address and profile picture. Keep an immutable, unique username separate from the editable full name. Existing accounts require a deterministic backfill with collision review before the username becomes mandatory; do not derive permanent audit identity from a mutable email or display name. Audit events retain the stable user ID and username attribution, while profile changes must not rewrite historical events. Decide whether the existing email-based login remains or accepts username as well during this implementation; no login change is implied now.
 
@@ -249,14 +249,18 @@ Implementation completed 25 September 2026. See [Phase 4 verification](docs/phas
 
 ### Phase 5 — First usable release and cutover
 
-- [ ] Implement a replaceable bilingual contract template with fictional agency content and physical signature areas; retain a clear sample marker until the owner substitutes final content.
-- [ ] Implement stable numbered receipts, contract snapshots/versions, and print layouts.
-- [ ] Replace the quick-access landing page with an operational agency dashboard: role-scoped KPI cards, urgent actions, pickups/returns, overdue/conflicting commitments, document alerts, debt and held-deposit summaries; add fleet-status and time-series revenue/collections charts, date filters, clear empty states and links to underlying records.
-- [ ] Rehearse migration of vehicles, customers, active rentals, upcoming reservations, and opening unpaid balances.
-- [ ] Provision staging and production VM/Docker deployment, HTTPS, monitoring, backups, and restore procedure.
-- [ ] Expand Preferences with editable full name, phone, email, address and profile picture; introduce immutable unique usernames and preserve audit attribution.
+- [x] Implement a replaceable bilingual contract template with fictional agency content and physical signature areas; retain a clear sample marker until the owner substitutes final content.
+- [x] Implement stable numbered receipts, contract snapshots/versions, and print layouts.
+- [x] Replace the quick-access landing page with an operational agency dashboard: role-scoped KPI cards, urgent actions, pickups/returns, overdue/conflicting commitments, document alerts, debt and held-deposit summaries; add fleet-status and time-series revenue/collections charts, date filters, clear empty states and links to underlying records.
+- [x] Rehearse fictional migration of vehicles, customers, active rentals, upcoming reservations, opening unpaid balances and remaining held deposits; see Phase 5 verification for rollback-only scope.
+- [ ] Validate a real-data staging import with source mapping, duplicate handling, documents and final reconciliation.
+- [x] Prepare production Docker images/Compose, HTTPS configuration, restricted database-role setup and paired backup/restore procedure.
+- [ ] Provision staging and production VM/domain, configure monitoring/backups and complete measured restore; deferred at the owner’s request.
+- [x] Expand Preferences with editable full name, phone, email, address and profile picture; introduce immutable unique usernames and preserve audit attribution.
 - [ ] Conduct staff acceptance sessions across roles, languages, themes, and screen sizes.
 - [ ] Perform approved cutover with reconciliation, training, and rollback/recovery readiness.
+
+Implementation notes: [Phase 5 verification](docs/phase-5-verification.md). Email-based login is retained; immutable usernames use staff-{ID}. Printable French/Arabic templates remain marked as samples. Infrastructure, real imports and staff acceptance are not complete.
 
 Acceptance: staff complete the full everyday workflow without Excel; contracts/receipts print with correct Arabic shaping and no clipped fields; dashboard flags overdue and blocked vehicles; migrated active commitments block availability correctly; opening debt and deposits reconcile to agreed source totals; a backup restores both data and attachments. This is the first agency launch gate.
 

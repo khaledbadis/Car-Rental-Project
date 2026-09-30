@@ -21,6 +21,6 @@ class GlobalSearch extends Component
             }
         }
 
-return view('livewire.global-search', compact('results'));
+        return view('livewire.global-search', compact('results'));
     }
 }

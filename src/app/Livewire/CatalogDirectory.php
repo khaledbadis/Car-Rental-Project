@@ -73,10 +73,10 @@ class CatalogDirectory extends Component
                 $this->addError('form.'.$k, $v[0]);
             }
 
-return null;
+            return null;
         }
 
-return redirect()->route($this->kind.'s.show', $r->id);
+        return redirect()->route($this->kind.'s.show', $r->id);
     }
 
     public function addCategory(Actions $a): void

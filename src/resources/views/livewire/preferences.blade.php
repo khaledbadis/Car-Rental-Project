@@ -1,6 +1,12 @@
 <div class="max-w-2xl"><h1 class="text-3xl font-semibold">{{ __('ui.preferences') }}</h1>
 @if(auth()->user()->must_change_password)<p role="alert" class="mt-5 rounded-xl bg-amber-100 p-4 text-amber-950">{{ __('ui.change_required') }}</p>@endif
-<form wire:submit="save" class="mt-8 space-y-5 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+<form wire:submit="saveProfile" class="mt-8 space-y-5 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+<h2 class="text-xl font-semibold">{{ __('release.profile') }}</h2>
+<div class="flex items-center gap-4">@if(auth()->user()->avatar_path)<img src="{{ route('profile.avatar') }}?v={{ auth()->user()->updated_at->timestamp }}" alt="{{ __('release.avatar') }}" class="size-20 rounded-full object-cover"/>@else<flux:icon name="user-circle" class="size-16 text-teal-700"/>@endif<div><p class="font-semibold">{{ auth()->user()->username }}</p><p class="text-sm text-zinc-500">{{ __('release.username_hint') }}</p></div></div>
+<flux:input wire:model="profile.name" :label="__('release.full_name')"/><flux:input wire:model="profile.email" type="email" :label="__('ui.email')"/><p class="text-sm text-zinc-500">{{ __('release.email_login') }}</p><flux:input wire:model="profile.phone" type="tel" :label="__('release.phone')"/><flux:textarea wire:model="profile.address" :label="__('release.address')" rows="2"/>
+<flux:input wire:model="avatar" type="file" accept="image/jpeg,image/png" :label="__('release.avatar')"/><p class="text-sm text-zinc-500">{{ __('release.avatar_hint') }}</p>@if(auth()->user()->avatar_path)<flux:checkbox wire:model="removeAvatar" :label="__('release.remove_avatar')"/>@endif
+<flux:button type="submit" variant="primary" wire:loading.attr="disabled">{{ __('ui.save') }}</flux:button></form>
+<form wire:submit="save"  class="mt-8 space-y-5 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
 <flux:select wire:model="locale" :label="__('ui.locale')"><option value="fr">Français</option><option value="ar">العربية</option><option value="en">English</option></flux:select>
 <flux:select wire:model="theme" :label="__('ui.theme')">@foreach(['system','light','dark'] as $mode)<option value="{{ $mode }}">{{ __('ui.'.$mode) }}</option>@endforeach</flux:select>
 <flux:button type="submit" variant="primary">{{ __('ui.save') }}</flux:button></form>

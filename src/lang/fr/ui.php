@@ -64,6 +64,7 @@ return [
     'login_hint' => 'Connectez-vous avec votre compte professionnel.',
     'recovery_hint' => 'Besoin d’accès ? Contactez votre responsable.',
     'actions' => [
+        'profile.updated' => 'Profil modifié',
         'rental.created' => 'Location · créée',
         'rental.handover' => 'Location · départ',
         'rental.return' => 'Location · retour',

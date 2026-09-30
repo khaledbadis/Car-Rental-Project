@@ -8,6 +8,7 @@ use App\Models\Rental;
 use App\Models\Reservation;
 use App\Models\User;
 use App\Modules\Foundation\Actions as Audit;
+use App\Modules\Release\Documents;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
@@ -33,7 +34,7 @@ class Ledger
         ($kind === 'rental' ? Rental::class : Reservation::class)::findOrFail($id);
         $account = FinancialAccount::where($kind.'_id', $id)->first();
 
-        return ['account' => $account, 'totals' => $this->totals($account), 'entries' => $account ? $account->entries()->orderByDesc('id')->get() : collect()];
+        return ['account' => $account, 'totals' => $this->totals($account), 'entries' => $account ? $account->entries()->with('receipt')->orderByDesc('id')->get() : collect()];
     }
 
     public function totals(?FinancialAccount $account): array
@@ -65,6 +66,8 @@ class Ledger
             }
         }
         app(Audit::class)->audit($u, 'ledger.'.$e->kind, 'ledger_entry', $e->id, null, $e->only(['financial_account_id', 'kind', 'amount_cents', 'charge_delta', 'payment_delta', 'deposit_delta', 'reverses_id', 'method', 'effective_at']), $e->reason);
+
+        app(Documents::class)->issue($e);
 
         return $e;
     }

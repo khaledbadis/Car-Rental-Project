@@ -3,10 +3,38 @@
 namespace App\Livewire;
 
 use App\Modules\Foundation\Actions;
+use App\Modules\Release\Profile;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class Preferences extends Component
 {
+    use WithFileUploads;
+
+    public array $profile = [];
+
+    public $avatar;
+
+    public bool $removeAvatar = false;
+
+    public function saveProfile(Profile $a): mixed
+    {
+        try {
+            $user = $a->save(auth()->user(), $this->profile + ['avatar' => $this->avatar, 'remove_avatar' => $this->removeAvatar]);
+            auth()->setUser($user);
+            $this->avatar = null;
+            $this->removeAvatar = false;
+            session()->flash('success', __('ui.saved'));
+
+            return redirect()->route('preferences');
+        } catch (ValidationException $e) {
+            foreach ($e->errors() as $key => $messages) {
+                $this->addError($key === 'avatar' ? 'avatar' : 'profile.'.$key, $messages[0]);
+            }
+        }
+    }
+
     public string $locale = 'fr';
 
     public string $theme = 'system';
@@ -19,8 +47,9 @@ class Preferences extends Component
 
     public function mount(): void
     {
-        $this->locale = auth()->user()->locale;
-        $this->theme = auth()->user()->theme;
+        $this->profile = auth()->user()->only(['name', 'email', 'phone', 'address']);
+        $this->locale = auth()->user()->locale ?? 'fr';
+        $this->theme = auth()->user()->theme ?? 'system';
     }
 
     public function save(Actions $actions): mixed

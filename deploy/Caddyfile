@@ -1,0 +1,16 @@
+{$APP_DOMAIN} {
+    root * /var/www/html/public
+    encode zstd gzip
+    php_fastcgi app:9000
+    file_server
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy same-origin
+        Strict-Transport-Security "max-age=31536000"
+        -Server
+    }
+    log {
+        output stdout
+        format json
+    }
+}

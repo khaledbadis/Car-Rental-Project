@@ -1,0 +1,18 @@
+{
+  "sample": true,
+  "vehicles": [
+    {"source_id":"V001","registration":"MIGRATION-DEMO-01","make":"Renault","model":"Clio","daily_rate":"8000.00"},
+    {"source_id":"V002","registration":"MIGRATION-DEMO-02","make":"Peugeot","model":"208","daily_rate":"9000.00"}
+  ],
+  "customers": [
+    {"source_id":"C001","name":"Fictional opening-balance customer"},
+    {"source_id":"C002","name":"Fictional upcoming-booking customer"}
+  ],
+  "active_rentals": [
+    {"source_id":"L001","vehicle":"V001","customer":"C001","started_days_ago":1,"ends_in_days":2,"outstanding":"4500.00","held_deposit":"25000.00"}
+  ],
+  "reservations": [
+    {"source_id":"R001","vehicle":"V002","customer":"C002","starts_in_days":2,"ends_in_days":4}
+  ],
+  "expected": {"vehicles":2,"customers":2,"active_rentals":1,"reservations":1,"outstanding_cents":450000,"held_cents":2500000}
+}

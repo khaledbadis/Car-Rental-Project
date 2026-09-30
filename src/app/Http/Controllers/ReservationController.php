@@ -51,6 +51,6 @@ class ReservationController extends Controller
 
     public function release(Request $r, Actions $a, int $id)
     {
-        return ['data' => $a->release($r->user(),$id,$r->all())];
+        return ['data' => $a->release($r->user(), $id, $r->all())];
     }
 }

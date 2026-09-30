@@ -7,3 +7,7 @@
 /src/public/hot
 /src/auth.json
 /src/.phpunit.result.cache
+
+/deploy/db.env
+/deploy/migration.env
+/deploy/backups/

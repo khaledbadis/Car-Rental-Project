@@ -23,6 +23,6 @@ final class Money
 
     public static function display(int $cents): string
     {
-        return number_format(intdiv(abs($cents), 100), 0, ',', ' ').','.str_pad((string) (abs($cents) % 100), 2, '0', STR_PAD_LEFT).' DA';
+        return ($cents < 0 ? '-' : '').number_format(intdiv(abs($cents), 100), 0, ',', ' ').','.str_pad((string) (abs($cents) % 100), 2, '0', STR_PAD_LEFT).' DA';
     }
 }

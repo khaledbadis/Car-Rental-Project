@@ -89,6 +89,6 @@ class BlankFormInputTest extends TestCase
     {
         $form = $this->vehicleForm();
         Livewire::test(CatalogDirectory::class, ['kind' => 'vehicle'])->set('form', array_replace($form, ['weekly_rate' => 'not money']))->call('save')->assertHasErrors(['form.weekly_rate']);
-        $this->postJson('/api/v1/vehicles',$form)->assertCreated()->assertJsonPath('data.weekly_rate',null)->assertJsonPath('data.entered_service_at',null);
+        $this->postJson('/api/v1/vehicles', $form)->assertCreated()->assertJsonPath('data.weekly_rate', null)->assertJsonPath('data.entered_service_at', null);
     }
 }

@@ -69,6 +69,6 @@ class RentalController extends Controller
         Gate::forUser($r->user())->authorize('rentals.manage');
         $p = InspectionPhoto::findOrFail($id);
 
-        return Storage::disk('local')->download($p->path,'inspection-'.$id.($p->mime === 'image/png' ? '.png' : '.jpg'),['Content-Type' => $p->mime, 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'private, no-store']);
+        return Storage::disk('local')->download($p->path, 'inspection-'.$id.($p->mime === 'image/png' ? '.png' : '.jpg'), ['Content-Type' => $p->mime, 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'private, no-store']);
     }
 }

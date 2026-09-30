@@ -60,6 +60,8 @@ class RentalConcurrencyTest extends TestCase
             }sort($codes);
             $this->assertSame($sameKey ? [0, 0] : [0, 2], $codes);
             $this->assertDatabaseCount('ledger_entries', 3);
+            $this->assertDatabaseCount('receipts', 2);
+            $this->assertSame(2, DB::table('receipts')->distinct()->count('number'));
             $totals = app(Ledger::class)->totals($r->account);
             $this->assertSame($sameKey ? 100 : 6000, $totals['payments_cents']);
             $this->assertSame($sameKey ? 10000 : 4000, $totals['held_cents']);

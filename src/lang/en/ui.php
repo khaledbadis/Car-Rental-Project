@@ -64,6 +64,7 @@ return [
     'login_hint' => 'Sign in with your staff account.',
     'recovery_hint' => 'Need access? Contact your manager.',
     'actions' => [
+        'profile.updated' => 'Profile updated',
         'rental.created' => 'Rental · created',
         'rental.handover' => 'Rental · handed over',
         'rental.return' => 'Rental · returned',
