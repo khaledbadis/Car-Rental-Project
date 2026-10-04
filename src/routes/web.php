@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\ReleaseController;
 use App\Http\Controllers\RentalController;
 use App\Http\Controllers\SessionController;
@@ -9,6 +10,7 @@ use App\Livewire\Availability;
 use App\Livewire\CatalogDirectory;
 use App\Livewire\CatalogProfile;
 use App\Livewire\Dashboard;
+use App\Livewire\Maintenance;
 use App\Livewire\Preferences;
 use App\Livewire\RentalProfile;
 use App\Livewire\Rentals;
@@ -62,4 +64,9 @@ Route::middleware(['auth', 'account'])->group(function () {
     Route::get('/profile/avatar', [ReleaseController::class, 'avatar'])->name('profile.avatar');
     Route::get('/receipts/{id}/print', [ReleaseController::class, 'receipt'])->whereNumber('id')->name('receipts.print');
     Route::get('/rentals/{id}/contracts/{version}/print', [ReleaseController::class, 'contract'])->whereNumber(['id', 'version'])->name('contracts.print');
+});
+
+Route::middleware(['auth', 'account'])->group(function () {
+    Route::get('/maintenance', Maintenance::class)->name('maintenance');
+    Route::get('/maintenance-attachments/{id}', [MaintenanceController::class, 'download'])->whereNumber('id')->name('maintenance-attachments.download');
 });

@@ -1,4 +1,4 @@
-# Car rental management — Phase 3
+# Car rental management — Phase 6
 
 Laravel 13 / PHP 8.4, Livewire 4, Flux 2 (free components), Tailwind 4, PostgreSQL 17. Composer and npm lockfiles pin installed packages. All runtimes run in Docker.
 
@@ -123,3 +123,9 @@ This Compose configuration is a local development environment with a PHP develop
 Official references used for setup: [Laravel releases](https://laravel.com/framework/docs/releases), [Livewire installation](https://livewire.laravel.com/docs/4.x/installation), [Flux installation](https://fluxui.dev/docs/installation).
 
 The homepage now summarizes agency operations, with date filters and separate revenue/collection trends for Manager/Finance. Receipt links appear in the rental/reservation ledger; agreement print links appear on each rental version. Browser Print / Save as PDF handles document output. Sample agency text lives in src/config/contract.php and remains clearly marked until replaced.
+
+## Maintenance and next phases
+
+The Maintenance screen provides completed service history, date/mileage reminders, private evidence and explicit release of linked maintenance blocks. Managers record services; agents see operational history; Manager/Finance can read costs and attachments. Reminder thresholds are editable in Settings. Vehicle profiles link to filtered history. See [Phase 6 verification](docs/phase-6-verification.md).
+
+Expenses/reporting remain Phase 7. CI/CD foundation follows in Phase 8; the owner handles VM provisioning, secrets, activation and actual deployment. See the [owner deployment guide](docs/deployment-guide.md) and [project specification](project-spec.md). Existing launch gates remain open.

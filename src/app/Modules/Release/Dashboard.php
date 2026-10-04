@@ -9,6 +9,7 @@ use App\Models\Reservation;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleCommitment;
+use App\Modules\Maintenance\Actions;
 use App\Modules\Rentals\Ledger;
 use App\Modules\Reservations\Actions as Schedule;
 use Carbon\CarbonImmutable;
@@ -68,7 +69,12 @@ class Dashboard
                 $urgent[] = ['kind' => 'pickup_late', 'label' => $r->vehicle?->registration.' · '.$r->customer->name, 'url' => route('reservations.show', $r->id)];
             }
         }
-        $priorities = ['conflict' => 0, 'overdue' => 1, 'pickup_late' => 2, 'documents' => 3];
+        if ($u->permits('maintenance.view')) {
+            foreach (app(Actions::class)->reminders($u) as $reminder) {
+                $urgent[] = ['kind' => 'maintenance', 'label' => $reminder['registration'].' · '.__('maintenance.'.$reminder['service_type']).' · '.__('maintenance.'.$reminder['status']), 'url' => route('maintenance', ['vehicle_id' => $reminder['vehicle_id']])];
+            }
+        }
+        $priorities = ['maintenance' => 3, 'conflict' => 0, 'overdue' => 1, 'pickup_late' => 2, 'documents' => 3];
         usort($urgent, fn ($a, $b) => $priorities[$a['kind']] <=> $priorities[$b['kind']]);
         $activity = [];
         foreach ($bookings as $b) {

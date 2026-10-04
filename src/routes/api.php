@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\FoundationController as Api;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\ReleaseController;
 use App\Http\Controllers\RentalController;
 use App\Http\Controllers\ReservationController;
@@ -75,4 +76,14 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'account', 'throttle:api'])->gr
     Route::get('me/avatar', [$c, 'avatar']);
     Route::get('receipts/{id}', [$c, 'receipt'])->whereNumber('id');
     Route::get('rentals/{id}/contracts/{version}', [$c, 'contract'])->whereNumber(['id', 'version']);
+});
+
+Route::prefix('v1')->middleware(['auth:sanctum', 'account', 'throttle:api'])->group(function () {
+    $c = MaintenanceController::class;
+    Route::get('maintenance', [$c, 'index']);
+    Route::post('maintenance', [$c, 'create']);
+    Route::get('maintenance/reminders', [$c, 'reminders']);
+    Route::post('maintenance/{id}/release', [$c, 'release'])->whereNumber('id');
+    Route::post('maintenance/{id}/attachments', [$c, 'upload'])->whereNumber('id');
+    Route::get('maintenance-attachments/{id}', [$c, 'download'])->whereNumber('id');
 });

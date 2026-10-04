@@ -100,7 +100,7 @@ class Actions
     public function saveSettings(User $actor, array $input): array
     {
         Gate::forUser($actor)->authorize('settings.manage');
-        $v = Validator::make(Input::normalize($input), ['preparation_minutes' => 'required|integer|min:0|max:1440', 'late_grace_minutes' => 'required|integer|min:0|max:1440', 'no_show_minutes' => 'required|integer|min:0|max:1440', 'upload_limit_mb' => 'required|integer|min:1|max:10', 'reason' => 'required|string|max:500'])->validate();
+        $v = Validator::make(Input::normalize($input), ['preparation_minutes' => 'required|integer|min:0|max:1440', 'late_grace_minutes' => 'required|integer|min:0|max:1440', 'no_show_minutes' => 'required|integer|min:0|max:1440', 'maintenance_warning_days' => 'sometimes|integer|min:0|max:365', 'maintenance_warning_km' => 'sometimes|integer|min:0|max:100000', 'upload_limit_mb' => 'required|integer|min:1|max:10', 'reason' => 'required|string|max:500'])->validate();
 
         return DB::transaction(function () use ($actor, $v) {
             $before = (array) DB::table('agency_settings')->where('id', 1)->lockForUpdate()->first();

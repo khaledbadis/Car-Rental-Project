@@ -1,6 +1,6 @@
 # Car Rental Management — Project Specification
 
-Status: Phase 5 application features implemented; deployment preparation complete; VM provisioning deferred · 25 September 2026
+Status: Phases 1–4 implemented; Phase 5 application delivered with launch gates open; Phase 6 implemented; CI/CD foundation scheduled after Phase 7 · 4 October 2026
 
 Sources: [Client brief](client-brief.md), [Client answers](QA.txt), [Resolved decisions](Decisions.txt), and project owner's technical requirements. The owner's 20 September instruction authorizes fictional documents and migration samples in place of waiting for client materials; placeholders must remain identifiable and replaceable. This document defines scope and implementation gates; it does not authorize implementing every phase at once.
 
@@ -42,6 +42,8 @@ Permissions are enforced server-side in shared application operations and expose
 | Negotiated price overrides / discounts | Yes | Standard rates and base discount ≤10% only | No |
 | Cancel reservations | Yes, reason required | Yes, reason required; financial settlement handled by Manager/Finance | No |
 | Override expired mandatory vehicle documents | Yes, reason required | No | No |
+| Record completed maintenance and upload evidence | Yes | No | No |
+| Read maintenance operations / costs and evidence | Both | Operations only | Both |
 | Full financial reports and audit access | Yes | Limited operational view | Finance scope |
 
 Use permissions rather than an approval workflow: an authorized person performs sensitive actions under their own account. Managers alone configure vehicle rates. For a fixed-amount agent discount, enforce the same 10% limit against the undiscounted base charge; repeated edits cannot accumulate beyond this limit. Never share manager credentials.
@@ -212,7 +214,7 @@ Acceptance: decisions and explicitly labeled implementation assumptions are reco
 
 Acceptance: a clean checkout starts via documented Docker steps; users can sign in and receive correct server-enforced permissions; shell and validation render in all three languages and both themes; an unauthorized API request cannot bypass access rules.
 
-Implementation completed 20 September 2026. See [Phase 1 verification](docs/phase-1-verification.md), [setup instructions](README.md), and [API contract](docs/openapi.json). Production hosting remains Phase 5.
+Implementation completed 20 September 2026. See [Phase 1 verification](docs/phase-1-verification.md), [setup instructions](README.md), and [API contract](docs/openapi.json). Production hosting is owner-operated; launch gates remain tracked in Phase 5 and the CI/CD foundation is scheduled in Phase 8.
 
 ### Phase 2 — Fleet and customer records
 
@@ -264,12 +266,16 @@ Implementation notes: [Phase 5 verification](docs/phase-5-verification.md). Emai
 
 Acceptance: staff complete the full everyday workflow without Excel; contracts/receipts print with correct Arabic shaping and no clipped fields; dashboard flags overdue and blocked vehicles; migrated active commitments block availability correctly; opening debt and deposits reconcile to agreed source totals; a backup restores both data and attachments. This is the first agency launch gate.
 
+Owner sequencing decision (4 October 2026): continue Phases 6 and 7 while the explicit Phase 5 launch requirements remain open. This does not certify agency cutover or production readiness.
+
 ### Phase 6 — Detailed maintenance
 
-- [ ] Add service history, mileage/date reminders, costs, and attachments.
-- [ ] Link work records to existing maintenance blocks and release operations.
+- [x] Add service history, mileage/date reminders, costs, and attachments.
+- [x] Link work records to existing maintenance blocks and release operations.
 
 Acceptance: record an oil change and next due mileage/date; reminders reflect recorded mileage; maintenance blocking remains consistent with reservation checks.
+
+Implementation completed 4 October 2026. See [Phase 6 verification](docs/phase-6-verification.md). Managers record completed services; all roles read operational history/reminders, while costs, notes and evidence require finance scope. Latest service date/ID per vehicle/type determines reminders; default warning thresholds are 30 days/500 km and are configurable. Historical readings cannot lower the vehicle odometer. Recording work does not automatically release a block. Maintenance cost is stored once on the service record; Phase 7 must link it without duplicating an expense.
 
 ### Phase 7 — Expenses and management reporting
 
@@ -278,6 +284,22 @@ Acceptance: record an oil change and next due mileage/date; reminders reflect re
 - [ ] Add date filters and appropriate export options after format agreement.
 
 Acceptance: report totals reconcile to ledger/expense records; security deposits held are excluded from revenue; maintenance is counted once; utilization follows its documented denominator.
+
+### Phase 8 — CI/CD foundation and owner deployment handoff
+
+Scheduled immediately after Phase 7 by the owner on 4 October 2026. Prepare and verify the foundation only; the owner provisions infrastructure, configures GitHub and secrets, enables deployment and performs launch. Do not provision VMs or activate production deployment as part of implementation.
+
+- [ ] Add GitHub Actions checks on pushes/pull requests: PostgreSQL tests, Pint, frontend compilation and production image checks, with isolated test data.
+- [ ] Prepare publication of application/web images to GHCR using immutable commit identifiers/digests; publish only trusted release-branch code after checks succeed.
+- [ ] Prepare an opt-in deployment job for the owner-selected branch (default proposal: main), environment secrets and serialized deployments. Leave live deployment disabled until owner setup and initial verification.
+- [ ] Adapt production Compose to consume the published images; prepare a deployment script with preflight, paired backup, maintenance window, migrations using owner credentials, worker restart and readiness checks.
+- [ ] Retain the previous release and document schema-compatible application rollback versus forward recovery; never automatically reverse database migrations or restore over new financial records.
+- [x] Add an owner deployment guide describing preparation, remaining inputs, setup sequence, release activation and recovery responsibilities.
+- [ ] Finalize the guide with tested commands, required GitHub permissions/secrets, private VM connectivity and failure notification configuration after the foundation is implemented.
+
+Acceptance: isolated CI and a disposable deployment rehearsal demonstrate that failed checks prevent release, app/web use the same revision, concurrent deployments cannot overlap, and health failures are reported. No secrets enter images/logs/source. Owner can follow the guide without implied provisioning or launch by the implementation agent. Real backup restore, source-data reconciliation and staff acceptance remain separate launch requirements.
+
+Guide: [Owner deployment guide](docs/deployment-guide.md). Existing Phase 5 Docker/backup preparation is reused; it is not yet an automated delivery pipeline.
 
 ### Future work — Separate scope
 

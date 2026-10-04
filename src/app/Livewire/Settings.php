@@ -15,6 +15,10 @@ class Settings extends Component
 
     public $upload_limit_mb = 10;
 
+    public $maintenance_warning_days = 30;
+
+    public $maintenance_warning_km = 500;
+
     public string $reason = '';
 
     public function mount(Actions $a): void
@@ -28,7 +32,7 @@ class Settings extends Component
 
     public function save(Actions $a): void
     {
-        $a->saveSettings(auth()->user(), $this->only(['preparation_minutes', 'late_grace_minutes', 'no_show_minutes', 'upload_limit_mb', 'reason']));
+        $a->saveSettings(auth()->user(), $this->only(['preparation_minutes', 'late_grace_minutes', 'no_show_minutes', 'upload_limit_mb', 'maintenance_warning_days', 'maintenance_warning_km', 'reason']));
         $this->reason = '';
         session()->flash('success', __('ui.saved'));
     }

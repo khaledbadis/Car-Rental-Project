@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Car Rental API",
-    "version": "1.4.0",
-    "description": "Foundation, catalog, reservations and availability APIs. Web and API share application actions. Permissions require both role and token ability. Dates accept ISO 8601 with explicit offset and seconds; stored UTC, agency dates use Africa/Algiers. Rental lifecycle and append-only ledger share Livewire application actions. Every new rental, lifecycle, ledger and photo write requires a body idempotency_key UUID: retry with the same actor, key and normalized payload; changed input returns 409 retry_mismatch. Lifecycle writes require current version. Monetary inputs are decimal DZD strings with up to two decimals; outputs are integer centimes. Phase 5 adds a role-scoped operational dashboard, self-profile editing with immutable staff usernames, private avatars, immutable numbered receipts and versioned bilingual contract data. Login continues to use email."
+    "version": "1.5.0",
+    "description": "Foundation, catalog, reservations and availability APIs. Web and API share application actions. Permissions require both role and token ability. Dates accept ISO 8601 with explicit offset and seconds; stored UTC, agency dates use Africa/Algiers. Rental lifecycle and append-only ledger share Livewire application actions. Every new rental, lifecycle, ledger and photo write requires a body idempotency_key UUID: retry with the same actor, key and normalized payload; changed input returns 409 retry_mismatch. Lifecycle writes require current version. Monetary inputs are decimal DZD strings with up to two decimals; outputs are integer centimes. Phase 5 adds a role-scoped operational dashboard, self-profile editing with immutable staff usernames, private avatars, immutable numbered receipts and versioned bilingual contract data. Login continues to use email. Phase 6 adds completed maintenance records, private evidence and date/mileage reminders. Maintenance is recorded by Managers; agents see operational fields only and Manager/Finance can read costs, notes and evidence."
   },
   "servers": [
     {
@@ -4346,6 +4346,285 @@
           }
         }
       }
+    },
+    "/maintenance": {
+      "get": {
+        "summary": "List completed maintenance",
+        "description": "Requires maintenance.view, including token abilities. Paginated, 20 per page, latest service date then ID. Operational readers omit costs, notes, attachments, creator and retry metadata.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MaintenanceRecord"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "422": {
+            "description": "Validation errors"
+          },
+          "409": {
+            "description": "Stale version/retry mismatch or archived vehicle"
+          }
+        },
+        "parameters": [
+          {
+            "name": "vehicle_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "Record completed service",
+        "description": "Requires maintenance.manage, including token abilities. History has no edit/delete endpoint. A higher service mileage advances vehicle odometer/version; lower historical readings never reduce it. Cost is not a rental ledger entry; Phase 7 will link expenses without duplication.",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MaintenanceRecord"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "422": {
+            "description": "Validation errors"
+          },
+          "409": {
+            "description": "Stale version/retry mismatch or archived vehicle"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaintenanceInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maintenance/reminders": {
+      "get": {
+        "summary": "Current service reminders",
+        "description": "Requires maintenance.view, including token abilities. Latest serviced_on then ID per vehicle/service type supersedes old reminders, including clearing dates/km. Archived vehicles excluded. Due at date or mileage threshold; soon within configured days/km (defaults 30/500). Uses recorded mileage only.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MaintenanceReminder"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "422": {
+            "description": "Validation errors"
+          },
+          "409": {
+            "description": "Stale version/retry mismatch or archived vehicle"
+          }
+        }
+      }
+    },
+    "/maintenance/{id}/release": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "post": {
+        "summary": "Explicitly release the linked maintenance block",
+        "description": "Requires maintenance.manage and blocks.manage and fleet.manage, including token abilities. Delegates to the existing versioned scheduling action; affects no other commitments.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "422": {
+            "description": "Validation errors"
+          },
+          "409": {
+            "description": "Stale version/retry mismatch or archived vehicle"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "version",
+                  "reason"
+                ],
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "description": "Current linked block version, not maintenance ID/version."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maintenance/{id}/attachments": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "post": {
+        "summary": "Attach private PDF/JPEG/PNG evidence",
+        "description": "Requires maintenance.manage, including token abilities. ",
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "422": {
+            "description": "Validation errors"
+          },
+          "409": {
+            "description": "Stale version/retry mismatch or archived vehicle"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Agency upload_limit_mb, at most 10 MB."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maintenance-attachments/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Download private maintenance evidence",
+        "description": "Requires maintenance.view and finance.manage, including token abilities. ",
+        "responses": {
+          "200": {
+            "description": "Attachment with private/no-store and nosniff headers."
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "422": {
+            "description": "Validation errors"
+          },
+          "409": {
+            "description": "Stale version/retry mismatch or archived vehicle"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6008,7 +6287,7 @@
           "avatar": {
             "type": "string",
             "format": "binary",
-            "description": "Private JPEG/PNG, up to2MB, maximum4096\u00d74096 pixels."
+            "description": "Private JPEG/PNG, up to2MB, maximum4096×4096 pixels."
           },
           "remove_avatar": {
             "type": "boolean"
@@ -6121,6 +6400,204 @@
           }
         },
         "description": "Issued atomically when a ledger transaction is posted; GET never issues one. Refunds use REF, deposits/payment/reversal documents use REC. Series follows issuance year in Africa/Algiers. Reprints preserve all data."
+      },
+      "MaintenanceInput": {
+        "type": "object",
+        "required": [
+          "vehicle_id",
+          "service_type",
+          "serviced_on",
+          "mileage_km",
+          "cost",
+          "idempotency_key"
+        ],
+        "properties": {
+          "vehicle_id": {
+            "type": "integer"
+          },
+          "vehicle_commitment_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Optional existing maintenance block for the same vehicle; recording never releases it."
+          },
+          "service_type": {
+            "type": "string",
+            "enum": [
+              "oil",
+              "tyres",
+              "brakes",
+              "inspection",
+              "repair",
+              "other"
+            ]
+          },
+          "serviced_on": {
+            "type": "string",
+            "format": "date",
+            "description": "Not later than today in Africa/Algiers."
+          },
+          "mileage_km": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "cost": {
+            "type": "string",
+            "pattern": "^\\d{1,10}(\\.\\d{1,2})?$",
+            "example": "1250.50"
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 4000
+          },
+          "next_due_on": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "description": "Strictly after service date."
+          },
+          "next_due_km": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Strictly greater than service mileage."
+          },
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Same actor and normalized payload replay one record; changed input returns 409 stale."
+          }
+        }
+      },
+      "MaintenanceRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "vehicle_id": {
+            "type": "integer"
+          },
+          "vehicle_commitment_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Optional existing maintenance block for the same vehicle; recording never releases it."
+          },
+          "service_type": {
+            "type": "string",
+            "enum": [
+              "oil",
+              "tyres",
+              "brakes",
+              "inspection",
+              "repair",
+              "other"
+            ]
+          },
+          "serviced_on": {
+            "type": "string",
+            "format": "date",
+            "description": "Not later than today in Africa/Algiers."
+          },
+          "mileage_km": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "next_due_on": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "description": "Strictly after service date."
+          },
+          "next_due_km": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Strictly greater than service mileage."
+          },
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Same actor and normalized payload replay one record; changed input returns 409 stale."
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Omitted without finance.manage."
+          },
+          "cost_cents": {
+            "type": "integer",
+            "description": "DZD centimes; omitted without finance.manage."
+          },
+          "attachments": {
+            "type": "array",
+            "description": "Omitted without finance.manage; storage paths never returned.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "mime": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "MaintenanceReminder": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "vehicle_id": {
+            "type": "integer"
+          },
+          "registration": {
+            "type": "string"
+          },
+          "service_type": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "due",
+              "soon"
+            ]
+          },
+          "next_due_on": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "next_due_km": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "mileage_km": {
+            "type": "integer"
+          }
+        }
       }
     }
   }

@@ -1,6 +1,7 @@
 <?php
 
 return [
+
     'balances' => 'Soldes à régulariser',
     'no_balances' => 'Aucun impayé, caution détenue ou crédit.',
     'dashboard' => 'Vue de l’agence',

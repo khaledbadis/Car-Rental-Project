@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'maintenance' => 'الصيانة',
+    'maintenance_warning_days' => 'تنبيه الصيانة (أيام)',
+    'maintenance_warning_km' => 'تنبيه الصيانة (كم)',
+
     'brand' => 'وكالة التأجير',
     'workspace' => 'مساحة الوكالة',
     'dashboard' => 'الرئيسية',

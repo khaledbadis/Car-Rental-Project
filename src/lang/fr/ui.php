@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'maintenance' => 'Entretien',
+    'maintenance_warning_days' => 'Alerte entretien (jours)',
+    'maintenance_warning_km' => 'Alerte entretien (km)',
+
     'brand' => 'Agence Location',
     'workspace' => 'Espace agence',
     'dashboard' => 'Accueil',

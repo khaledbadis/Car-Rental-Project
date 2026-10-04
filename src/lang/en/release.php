@@ -1,6 +1,7 @@
 <?php
 
 return [
+
     'balances' => 'Balances requiring settlement',
     'no_balances' => 'No outstanding balances, held deposits or credits.',
     'dashboard' => 'Agency overview',
