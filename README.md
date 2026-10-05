@@ -1,4 +1,4 @@
-# Car rental management — Phase 6
+# Car rental management — Phase 7
 
 Laravel 13 / PHP 8.4, Livewire 4, Flux 2 (free components), Tailwind 4, PostgreSQL 17. Composer and npm lockfiles pin installed packages. All runtimes run in Docker.
 
@@ -128,4 +128,8 @@ The homepage now summarizes agency operations, with date filters and separate re
 
 The Maintenance screen provides completed service history, date/mileage reminders, private evidence and explicit release of linked maintenance blocks. Managers record services; agents see operational history; Manager/Finance can read costs and attachments. Reminder thresholds are editable in Settings. Vehicle profiles link to filtered history. See [Phase 6 verification](docs/phase-6-verification.md).
 
-Expenses/reporting remain Phase 7. CI/CD foundation follows in Phase 8; the owner handles VM provisioning, secrets, activation and actual deployment. See the [owner deployment guide](docs/deployment-guide.md) and [project specification](project-spec.md). Existing launch gates remain open.
+Expenses and management reports are implemented in Phase 7. CI/CD foundation follows in Phase 8; the owner handles VM provisioning, secrets, activation and actual deployment. See the [owner deployment guide](docs/deployment-guide.md) and [project specification](project-spec.md). Existing launch gates remain open.
+
+## Expenses and reports
+
+Manager/Finance can use Expenses for additional vehicle costs, private evidence and reasoned corrections. Maintenance service costs appear automatically once; do not enter them again. Management reports share revenue/collection rules with the dashboard, show utilization and vehicle contribution, and export CSV using applied date/vehicle filters. Unknown service-entry dates or inconsistent occupancy history produce N/A utilization. See [Phase 7 verification](docs/phase-7-verification.md) for definitions, limitations and export defaults.

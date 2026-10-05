@@ -4,16 +4,19 @@ use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\ReleaseController;
 use App\Http\Controllers\RentalController;
+use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\SessionController;
 use App\Livewire\Audit;
 use App\Livewire\Availability;
 use App\Livewire\CatalogDirectory;
 use App\Livewire\CatalogProfile;
 use App\Livewire\Dashboard;
+use App\Livewire\Expenses;
 use App\Livewire\Maintenance;
 use App\Livewire\Preferences;
 use App\Livewire\RentalProfile;
 use App\Livewire\Rentals;
+use App\Livewire\Reports;
 use App\Livewire\ReservationEditor;
 use App\Livewire\Reservations;
 use App\Livewire\Settings;
@@ -69,4 +72,11 @@ Route::middleware(['auth', 'account'])->group(function () {
 Route::middleware(['auth', 'account'])->group(function () {
     Route::get('/maintenance', Maintenance::class)->name('maintenance');
     Route::get('/maintenance-attachments/{id}', [MaintenanceController::class, 'download'])->whereNumber('id')->name('maintenance-attachments.download');
+});
+
+Route::middleware(['auth', 'account', 'can:finance.manage'])->group(function () {
+    Route::get('/expenses', Expenses::class)->name('expenses');
+    Route::get('/reports', Reports::class)->name('reports');
+    Route::get('/reports/export', [ReportingController::class, 'export'])->name('reports.export');
+    Route::get('/expense-attachments/{id}', [ReportingController::class, 'download'])->whereNumber('id')->name('expense-attachments.download');
 });

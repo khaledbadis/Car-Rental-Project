@@ -3,7 +3,6 @@
 namespace App\Modules\Release;
 
 use App\Models\FinancialAccount;
-use App\Models\LedgerEntry;
 use App\Models\Rental;
 use App\Models\Reservation;
 use App\Models\User;
@@ -11,6 +10,7 @@ use App\Models\Vehicle;
 use App\Models\VehicleCommitment;
 use App\Modules\Maintenance\Actions;
 use App\Modules\Rentals\Ledger;
+use App\Modules\Reporting\Recognition;
 use App\Modules\Reservations\Actions as Schedule;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
@@ -110,25 +110,11 @@ class Dashboard
             for ($day = $from; $day->lte($to); $day = $day->addDay()) {
                 $series[$day->toDateString()] = ['date' => $day->toDateString(), 'revenue' => 0, 'collections' => 0];
             }
-            $entries = LedgerEntry::all()->keyBy('id');
-            $accounts = FinancialAccount::all()->keyBy('id');
-            $allRentals = Rental::all()->keyBy('id');
-            foreach ($entries as $e) {
-                $original = $e->kind === 'reversal' ? $entries->get($e->reverses_id) : $e;
-                $account = $accounts->get($e->financial_account_id);
-                $r = $account?->rental_id ? $allRentals->get($account->rental_id) : null;
-                // Charge recognition uses rental start; held deposits never enter this series.
-                $date = $r?->starts_at ?? ($original?->category === 'cancellation' ? $original->effective_at : null);
-                if ($date && $original?->category !== 'opening' && ($r?->status !== 'draft')) {
-                    $key = $date->setTimezone('Africa/Algiers')->toDateString();
-                    if (isset($series[$key])) {
-                        $series[$key]['revenue'] += (int) $e->charge_delta;
-                    }
-                }
-                if (in_array($original?->kind, ['payment', 'refund'])) {
-                    $key = $e->effective_at->setTimezone('Africa/Algiers')->toDateString();
-                    if (isset($series[$key])) {
-                        $series[$key]['collections'] += (int) $e->payment_delta;
+            foreach (app(Recognition::class)->entries() as $entry) {
+                foreach (['revenue', 'collections'] as $metric) {
+                    $day = $entry[$metric.'_date'];
+                    if ($day && isset($series[$day])) {
+                        $series[$day][$metric] += $entry[$metric];
                     }
                 }
             }

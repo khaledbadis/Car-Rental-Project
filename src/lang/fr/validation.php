@@ -6,6 +6,9 @@ return [
     'image' => 'Le champ :attribute doit être une image JPEG ou PNG.',
     'dimensions' => 'Le champ :attribute ne doit pas dépasser 4096 × 4096 pixels.', 'required' => 'Le champ :attribute est obligatoire.', 'email' => 'La valeur du champ :attribute est invalide.', 'unique' => 'La valeur du champ :attribute est invalide.', 'in' => 'La valeur du champ :attribute est invalide.', 'boolean' => 'La valeur du champ :attribute est invalide.', 'integer' => 'La valeur du champ :attribute est invalide.', 'string' => 'La valeur du champ :attribute est invalide.', 'confirmed' => 'La valeur du champ :attribute est invalide.', 'min' => ['string' => 'Le champ :attribute doit contenir au moins :min caractères.', 'numeric' => 'La valeur du champ :attribute est invalide.'], 'max' => [
         'file' => 'La valeur du champ :attribute est invalide.', 'string' => 'La valeur du champ :attribute est invalide.', 'numeric' => 'La valeur du champ :attribute est invalide.'], 'attributes' => [
+            'incurred_on' => 'Date de dépense',
+            'description' => 'Description',
+
             'service_type' => 'Type d’intervention',
             'serviced_on' => 'Date d’intervention',
             'mileage_km' => 'Kilométrage d’intervention (km)',

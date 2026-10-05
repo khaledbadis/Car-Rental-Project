@@ -6,6 +6,9 @@ return [
     'image' => 'يجب أن يكون :attribute صورة JPEG أو PNG.',
     'dimensions' => 'يجب ألا تتجاوز أبعاد :attribute مقدار 4096 × 4096 بكسل.', 'required' => 'الحقل :attribute مطلوب.', 'email' => 'قيمة :attribute غير صالحة.', 'unique' => 'قيمة :attribute غير صالحة.', 'in' => 'قيمة :attribute غير صالحة.', 'boolean' => 'قيمة :attribute غير صالحة.', 'integer' => 'قيمة :attribute غير صالحة.', 'string' => 'قيمة :attribute غير صالحة.', 'confirmed' => 'قيمة :attribute غير صالحة.', 'min' => ['string' => 'يجب أن يحتوي :attribute على :min أحرف على الأقل.', 'numeric' => 'قيمة :attribute غير صالحة.'], 'max' => [
         'file' => 'قيمة :attribute غير صالحة.', 'string' => 'قيمة :attribute غير صالحة.', 'numeric' => 'قيمة :attribute غير صالحة.'], 'attributes' => [
+            'incurred_on' => 'تاريخ المصروف',
+            'description' => 'الوصف',
+
             'service_type' => 'نوع الصيانة',
             'serviced_on' => 'تاريخ الصيانة',
             'mileage_km' => 'المسافة عند الصيانة (كم)',

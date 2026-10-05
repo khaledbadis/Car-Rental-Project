@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Car Rental API",
-    "version": "1.5.0",
-    "description": "Foundation, catalog, reservations and availability APIs. Web and API share application actions. Permissions require both role and token ability. Dates accept ISO 8601 with explicit offset and seconds; stored UTC, agency dates use Africa/Algiers. Rental lifecycle and append-only ledger share Livewire application actions. Every new rental, lifecycle, ledger and photo write requires a body idempotency_key UUID: retry with the same actor, key and normalized payload; changed input returns 409 retry_mismatch. Lifecycle writes require current version. Monetary inputs are decimal DZD strings with up to two decimals; outputs are integer centimes. Phase 5 adds a role-scoped operational dashboard, self-profile editing with immutable staff usernames, private avatars, immutable numbered receipts and versioned bilingual contract data. Login continues to use email. Phase 6 adds completed maintenance records, private evidence and date/mileage reminders. Maintenance is recorded by Managers; agents see operational fields only and Manager/Finance can read costs, notes and evidence."
+    "version": "1.6.0",
+    "description": "Foundation, catalog, reservations and availability APIs. Web and API share application actions. Permissions require both role and token ability. Dates accept ISO 8601 with explicit offset and seconds; stored UTC, agency dates use Africa/Algiers. Rental lifecycle and append-only ledger share Livewire application actions. Every new rental, lifecycle, ledger and photo write requires a body idempotency_key UUID: retry with the same actor, key and normalized payload; changed input returns 409 retry_mismatch. Lifecycle writes require current version. Monetary inputs are decimal DZD strings with up to two decimals; outputs are integer centimes. Phase 5 adds a role-scoped operational dashboard, self-profile editing with immutable staff usernames, private avatars, immutable numbered receipts and versioned bilingual contract data. Login continues to use email. Phase 6 adds completed maintenance records, private evidence and date/mileage reminders. Maintenance is recorded by Managers; agents see operational fields only and Manager/Finance can read costs, notes and evidence. Phase 7 provides expense recording/reversals/evidence and date-filtered management reports/CSV. All require finance.manage (role and token). Expense amounts are integer centimes in responses; input uses decimal DZD strings. Maintenance creates exactly one linked expense automatically, including migration of existing services."
   },
   "servers": [
     {
@@ -4625,6 +4625,443 @@
           }
         }
       }
+    },
+    "/expenses": {
+      "get": {
+        "summary": "Paginated vehicle expenses",
+        "description": "Requires finance.manage for role and token. 20 per page; includes original and negative reversal rows, evidence IDs and reversal relation. Optional vehicle_id and page query parameters.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Expense"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Validation error"
+          },
+          "409": {
+            "description": "Stale retry payload or already reversed"
+          }
+        },
+        "parameters": [
+          {
+            "name": "vehicle_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "Record additional vehicle expense",
+        "description": "Requires finance.manage for role and token. Same actor/key/payload retries return the original entry; mismatch returns 409. Linked service costs already exist and must not be re-entered.",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Expense"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Validation error"
+          },
+          "409": {
+            "description": "Stale retry payload or already reversed"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExpenseInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/expenses/{id}/reverse": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "post": {
+        "summary": "Reverse an expense without deleting it",
+        "description": "Requires finance.manage for role and token. Negative entry uses the original incurred date and vehicle/category. Unique reverses_id prevents duplicate corrections. Not a cash refund. Maintenance history remains intact; its expense can be reversed.",
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Validation error"
+          },
+          "409": {
+            "description": "Stale retry payload or already reversed"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "reason",
+                  "idempotency_key"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "idempotency_key": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/expenses/{id}/attachments": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "post": {
+        "summary": "Upload private expense evidence",
+        "description": "Requires finance.manage for role and token. ",
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Validation error"
+          },
+          "409": {
+            "description": "Stale retry payload or already reversed"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "PDF/JPEG/PNG, configured agency limit up to 10 MB."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/expense-attachments/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Download private evidence",
+        "description": "Requires finance.manage for role and token. Attachment response, nosniff, private/no-store. Storage paths are never returned.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Validation error"
+          },
+          "409": {
+            "description": "Stale retry payload or already reversed"
+          }
+        }
+      }
+    },
+    "/reports": {
+      "get": {
+        "summary": "Management report",
+        "description": "Requires finance.manage for role and token. Inclusive agency dates, maximum 366 days. Revenue uses rental start; standalone cancellations use original charge effective date. Opening debt, drafts and deposits excluded from revenue. Net payment/refund collections use effective dates; deposit applications are not new collections. Expenses use incurred date including reversals. Actual rental hours end at return or now; eligible time is clipped to service/archival/now and excludes the union of maintenance/admin blocks truncated at release. Cleaning/preparation remain eligible. Missing service entry/handover, inconsistent overlaps or zero denominator produce null utilization. Counts include active/returned rentals by agreed start date. Contribution is not accounting profit.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string"
+                        },
+                        "to": {
+                          "type": "string"
+                        },
+                        "as_of": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "vehicle_id": {
+                          "type": [
+                            "integer",
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "totals": {
+                          "type": "object",
+                          "properties": {
+                            "revenue": {
+                              "type": "integer"
+                            },
+                            "collections": {
+                              "type": "integer"
+                            },
+                            "expenses": {
+                              "type": "integer"
+                            },
+                            "contribution": {
+                              "type": "integer"
+                            },
+                            "rental_count": {
+                              "type": "integer"
+                            },
+                            "standalone_cancellation": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "vehicles": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/VehicleReport"
+                          }
+                        },
+                        "unallocated": {
+                          "type": "object",
+                          "description": "Revenue/collections not attached to a vehicle, included in totals."
+                        },
+                        "categories": {
+                          "type": "object",
+                          "description": "Net expense centimes by category."
+                        },
+                        "daily": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string",
+                                "format": "date"
+                              },
+                              "revenue": {
+                                "type": "integer"
+                              },
+                              "collections": {
+                                "type": "integer"
+                              },
+                              "expenses": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Validation error"
+          },
+          "409": {
+            "description": "Stale retry payload or already reversed"
+          }
+        },
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "vehicle_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/reports/export": {
+      "get": {
+        "summary": "Export per-vehicle report CSV",
+        "description": "Requires finance.manage for role and token. Same filters and authorization as report. UTF-8 BOM, comma delimiter, stable English column keys, DZD decimal strings for money, formula-safe text, N/A numbers blank with explicit status. Includes unallocated row to reconcile totals. Not XLSX.",
+        "responses": {
+          "200": {
+            "description": "CSV attachment",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Validation error"
+          },
+          "409": {
+            "description": "Stale retry payload or already reversed"
+          }
+        },
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "vehicle_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -6596,6 +7033,161 @@
           },
           "mileage_km": {
             "type": "integer"
+          }
+        }
+      },
+      "ExpenseInput": {
+        "type": "object",
+        "required": [
+          "vehicle_id",
+          "category",
+          "amount",
+          "incurred_on",
+          "description",
+          "idempotency_key"
+        ],
+        "properties": {
+          "vehicle_id": {
+            "type": "integer"
+          },
+          "category": {
+            "enum": [
+              "maintenance",
+              "spare_parts",
+              "cleaning",
+              "towing",
+              "insurance",
+              "other"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "example": "1250.50",
+            "description": "Positive DZD, maximum two decimal places."
+          },
+          "incurred_on": {
+            "type": "string",
+            "format": "date",
+            "description": "Not after today in Africa/Algiers."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maintenance_record_id": {
+            "description": "Prohibited: maintenance expenses are created automatically."
+          }
+        }
+      },
+      "Expense": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "vehicle_id": {
+            "type": "integer"
+          },
+          "maintenance_record_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "reverses_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "category": {
+            "type": "string"
+          },
+          "amount_cents": {
+            "type": "integer"
+          },
+          "incurred_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": {
+            "type": "string"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "mime": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "VehicleReport": {
+        "type": "object",
+        "properties": {
+          "vehicle_id": {
+            "type": "integer"
+          },
+          "registration": {
+            "type": "string"
+          },
+          "rental_count": {
+            "type": "integer"
+          },
+          "revenue": {
+            "type": "integer",
+            "description": "DZD centimes."
+          },
+          "collections": {
+            "type": "integer",
+            "description": "DZD centimes."
+          },
+          "expenses": {
+            "type": "integer",
+            "description": "DZD centimes."
+          },
+          "maintenance_cost": {
+            "type": "integer",
+            "description": "DZD centimes."
+          },
+          "contribution": {
+            "type": "integer",
+            "description": "DZD centimes."
+          },
+          "rented_hours": {
+            "type": "number"
+          },
+          "eligible_hours": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "utilization": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "utilization_status": {
+            "enum": [
+              "ok",
+              "overlap",
+              "missing_service_date",
+              "missing_handover",
+              "no_eligible_hours"
+            ]
           }
         }
       }

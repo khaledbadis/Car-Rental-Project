@@ -6,6 +6,9 @@ return [
     'image' => 'The :attribute must be a JPEG or PNG image.',
     'dimensions' => 'The :attribute must not exceed 4096 × 4096 pixels.', 'required' => 'The :attribute field is required.', 'email' => 'The :attribute value is invalid.', 'unique' => 'The :attribute value is invalid.', 'in' => 'The :attribute value is invalid.', 'boolean' => 'The :attribute value is invalid.', 'integer' => 'The :attribute value is invalid.', 'string' => 'The :attribute value is invalid.', 'confirmed' => 'The :attribute value is invalid.', 'min' => ['string' => 'The :attribute must have at least :min characters.', 'numeric' => 'The :attribute value is invalid.'], 'max' => [
         'file' => 'The :attribute value is invalid.', 'string' => 'The :attribute value is invalid.', 'numeric' => 'The :attribute value is invalid.'], 'attributes' => [
+            'incurred_on' => 'Expense date',
+            'description' => 'Description',
+
             'service_type' => 'Service type',
             'serviced_on' => 'Service date',
             'mileage_km' => 'Service mileage (km)',

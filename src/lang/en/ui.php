@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'expenses' => 'Expenses',
+    'reports' => 'Management reports',
+
     'maintenance' => 'Maintenance',
     'maintenance_warning_days' => 'Maintenance warning (days)',
     'maintenance_warning_km' => 'Maintenance warning (km)',

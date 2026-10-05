@@ -9,6 +9,7 @@ use App\Models\Vehicle;
 use App\Models\VehicleCommitment;
 use App\Modules\Foundation\Actions as Foundation;
 use App\Modules\Rentals\Money;
+use App\Modules\Reporting\Expenses;
 use App\Modules\Reservations\Actions as Schedule;
 use App\Modules\Reservations\Conflict;
 use App\Support\Input;
@@ -74,6 +75,7 @@ class Actions
                 }
             }
             $record = MaintenanceRecord::create($v + ['created_by' => $u->id, 'request_hash' => $hash]);
+            app(Expenses::class)->maintenance($record);
             // Historical service readings never lower the latest known odometer.
             if ($v['mileage_km'] > $car->mileage_km) {
                 $car->update(['mileage_km' => $v['mileage_km'], 'version' => $car->version + 1]);

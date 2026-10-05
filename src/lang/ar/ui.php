@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'expenses' => 'المصاريف',
+    'reports' => 'تقارير الإدارة',
+
     'maintenance' => 'الصيانة',
     'maintenance_warning_days' => 'تنبيه الصيانة (أيام)',
     'maintenance_warning_km' => 'تنبيه الصيانة (كم)',

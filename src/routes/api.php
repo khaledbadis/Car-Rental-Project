@@ -5,6 +5,7 @@ use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\ReleaseController;
 use App\Http\Controllers\RentalController;
+use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\ReservationController;
 use Illuminate\Support\Facades\Route;
 
@@ -86,4 +87,15 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'account', 'throttle:api'])->gr
     Route::post('maintenance/{id}/release', [$c, 'release'])->whereNumber('id');
     Route::post('maintenance/{id}/attachments', [$c, 'upload'])->whereNumber('id');
     Route::get('maintenance-attachments/{id}', [$c, 'download'])->whereNumber('id');
+});
+
+Route::prefix('v1')->middleware(['auth:sanctum', 'account', 'throttle:api'])->group(function () {
+    $c = ReportingController::class;
+    Route::get('expenses', [$c, 'expenses']);
+    Route::post('expenses', [$c, 'create']);
+    Route::post('expenses/{id}/reverse', [$c, 'reverse'])->whereNumber('id');
+    Route::post('expenses/{id}/attachments', [$c, 'upload'])->whereNumber('id');
+    Route::get('expense-attachments/{id}', [$c, 'download'])->whereNumber('id');
+    Route::get('reports', [$c, 'report']);
+    Route::get('reports/export', [$c, 'export']);
 });

@@ -1,6 +1,6 @@
 # Car Rental Management — Project Specification
 
-Status: Phases 1–4 implemented; Phase 5 application delivered with launch gates open; Phase 6 implemented; CI/CD foundation scheduled after Phase 7 · 4 October 2026
+Status: Phases 1–4 implemented; Phase 5 application delivered with launch gates open; Phases 6–7 implemented (CSV default pending format preference); Phase 8 CI/CD foundation next · 4 October 2026
 
 Sources: [Client brief](client-brief.md), [Client answers](QA.txt), [Resolved decisions](Decisions.txt), and project owner's technical requirements. The owner's 20 September instruction authorizes fictional documents and migration samples in place of waiting for client materials; placeholders must remain identifiable and replaceable. This document defines scope and implementation gates; it does not authorize implementing every phase at once.
 
@@ -44,6 +44,7 @@ Permissions are enforced server-side in shared application operations and expose
 | Override expired mandatory vehicle documents | Yes, reason required | No | No |
 | Record completed maintenance and upload evidence | Yes | No | No |
 | Read maintenance operations / costs and evidence | Both | Operations only | Both |
+| Record expenses/corrections and access management reports/export | Yes | No | Yes |
 | Full financial reports and audit access | Yes | Limited operational view | Finance scope |
 
 Use permissions rather than an approval workflow: an authorized person performs sensitive actions under their own account. Managers alone configure vehicle rates. For a fixed-amount agent discount, enforce the same 10% limit against the undiscounted base charge; repeated edits cannot accumulate beyond this limit. Never share manager credentials.
@@ -279,11 +280,14 @@ Implementation completed 4 October 2026. See [Phase 6 verification](docs/phase-6
 
 ### Phase 7 — Expenses and management reporting
 
-- [ ] Add vehicle expenses and link maintenance costs without duplication.
-- [ ] Implement the agreed utilization denominator and rental-start revenue attribution, alongside payment-date collections.
-- [ ] Add date filters and appropriate export options after format agreement.
+- [x] Add vehicle expenses and link maintenance costs without duplication.
+- [x] Implement the agreed utilization denominator and rental-start revenue attribution, alongside payment-date collections.
+- [x] Add date/vehicle filters and an initial CSV export with documented format assumptions.
+- [ ] Confirm the owner’s export format preference; CSV is implemented as the initial default, with XLSX deferred unless requested.
 
 Acceptance: report totals reconcile to ledger/expense records; security deposits held are excluded from revenue; maintenance is counted once; utilization follows its documented denominator.
+
+Implementation delivered 4 October 2026. See [Phase 7 verification](docs/phase-7-verification.md). Manager/Finance record expenses and reversals and access reports/evidence. Maintenance creates one linked expense transactionally, including a backfill of existing services; no double summation. Reports and dashboard share revenue/collection recognition. Utilization uses elapsed actual rental time, merged maintenance/admin exclusions and explicit N/A reasons. Contribution is not accounting profit. Initial CSV uses stable English column keys and decimal DZD amounts; export format preference remains open and does not authorize an unrequested XLSX implementation.
 
 ### Phase 8 — CI/CD foundation and owner deployment handoff
 
