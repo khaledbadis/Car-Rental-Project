@@ -8,7 +8,8 @@ return [
     'maintenance_warning_days' => 'Maintenance warning (days)',
     'maintenance_warning_km' => 'Maintenance warning (km)',
 
-    'brand' => 'Agence Location',
+    'team_hint' => 'Individual accounts, roles and secure access.',
+    'brand' => 'Qualicar Algerie',
     'workspace' => 'Agency workspace',
     'dashboard' => 'Overview',
     'preferences' => 'Preferences',
@@ -71,6 +72,13 @@ return [
     'login_hint' => 'Sign in with your staff account.',
     'recovery_hint' => 'Need access? Contact your manager.',
     'actions' => [
+        'maintenance.recorded' => 'Maintenance recorded',
+        'maintenance.attachment_added' => 'Maintenance attachment added',
+        'expense.recorded' => 'Expense recorded',
+        'expense.reversed' => 'Expense reversed',
+        'expense.attachment_added' => 'Expense attachment added',
+        'staff.disabled' => 'Account disabled',
+
         'profile.updated' => 'Profile updated',
         'rental.created' => 'Rental · created',
         'rental.handover' => 'Rental · handed over',

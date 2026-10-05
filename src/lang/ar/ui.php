@@ -8,7 +8,8 @@ return [
     'maintenance_warning_days' => 'تنبيه الصيانة (أيام)',
     'maintenance_warning_km' => 'تنبيه الصيانة (كم)',
 
-    'brand' => 'وكالة التأجير',
+    'team_hint' => 'حسابات فردية وأدوار ووصول آمن.',
+    'brand' => 'Qualicar Algerie',
     'workspace' => 'مساحة الوكالة',
     'dashboard' => 'الرئيسية',
     'preferences' => 'التفضيلات',
@@ -71,6 +72,13 @@ return [
     'login_hint' => 'سجّل الدخول بحساب الموظف.',
     'recovery_hint' => 'تحتاج إلى الوصول؟ تواصل مع مديرك.',
     'actions' => [
+        'maintenance.recorded' => 'تسجيل صيانة',
+        'maintenance.attachment_added' => 'إضافة مرفق صيانة',
+        'expense.recorded' => 'تسجيل مصروف',
+        'expense.reversed' => 'إلغاء مصروف',
+        'expense.attachment_added' => 'إضافة مرفق مصروف',
+        'staff.disabled' => 'تعطيل الحساب',
+
         'profile.updated' => 'تحديث الملف الشخصي',
         'rental.created' => 'تأجير · إنشاء',
         'rental.handover' => 'تأجير · تسليم',

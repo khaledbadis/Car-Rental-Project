@@ -5062,6 +5062,91 @@
           }
         ]
       }
+    },
+    "/notifications": {
+      "get": {
+        "summary": "Current role-scoped agency alerts with per-user daily read state",
+        "responses": {
+          "200": {
+            "description": "data array: id, kind, label, url, read; unresolved alerts become unread each agency day"
+          },
+          "403": {
+            "description": "dashboard.view required"
+          }
+        }
+      }
+    },
+    "/notifications/read": {
+      "post": {
+        "summary": "Mark current alerts read for authenticated user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 64,
+                    "maxLength": 64
+                  }
+                },
+                "description": "Omit id to mark all current alerts read"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Read state saved"
+          },
+          "404": {
+            "description": "Alert not currently visible to this user"
+          }
+        }
+      }
+    },
+    "/staff/{id}/disable": {
+      "post": {
+        "summary": "Disable staff access while retaining history; staff.manage required",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Disabled user; sessions and tokens revoked"
+          },
+          "422": {
+            "description": "Self-disable or last active manager protected"
+          }
+        }
+      }
     }
   },
   "components": {

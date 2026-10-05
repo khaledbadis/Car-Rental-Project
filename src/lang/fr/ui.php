@@ -8,7 +8,8 @@ return [
     'maintenance_warning_days' => 'Alerte entretien (jours)',
     'maintenance_warning_km' => 'Alerte entretien (km)',
 
-    'brand' => 'Agence Location',
+    'team_hint' => 'Comptes individuels, rôles et accès sécurisé.',
+    'brand' => 'Qualicar Algerie',
     'workspace' => 'Espace agence',
     'dashboard' => 'Accueil',
     'preferences' => 'Préférences',
@@ -71,6 +72,13 @@ return [
     'login_hint' => 'Connectez-vous avec votre compte professionnel.',
     'recovery_hint' => 'Besoin d’accès ? Contactez votre responsable.',
     'actions' => [
+        'maintenance.recorded' => 'Entretien enregistré',
+        'maintenance.attachment_added' => 'Pièce jointe d’entretien ajoutée',
+        'expense.recorded' => 'Dépense enregistrée',
+        'expense.reversed' => 'Dépense annulée',
+        'expense.attachment_added' => 'Justificatif ajouté',
+        'staff.disabled' => 'Compte désactivé',
+
         'profile.updated' => 'Profil modifié',
         'rental.created' => 'Location · créée',
         'rental.handover' => 'Location · départ',

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Validator;
 
 class Dashboard
 {
-    public function read(User $u, array $input): array
+    public function read(User $u, array $input, bool $includeMoney = true): array
     {
         Gate::forUser($u)->authorize('dashboard.view');
         $v = Validator::make($input, ['from' => 'required|date_format:Y-m-d', 'to' => 'required|date_format:Y-m-d|after_or_equal:from'])->validate();
@@ -71,7 +71,7 @@ class Dashboard
         }
         if ($u->permits('maintenance.view')) {
             foreach (app(Actions::class)->reminders($u) as $reminder) {
-                $urgent[] = ['kind' => 'maintenance', 'label' => $reminder['registration'].' · '.__('maintenance.'.$reminder['service_type']).' · '.__('maintenance.'.$reminder['status']), 'url' => route('maintenance', ['vehicle_id' => $reminder['vehicle_id']])];
+                $urgent[] = ['kind' => 'maintenance', 'notification_key' => $reminder['service_type'], 'label' => $reminder['registration'].' · '.__('maintenance.'.$reminder['service_type']).' · '.__('maintenance.'.$reminder['status']), 'url' => route('maintenance', ['vehicle_id' => $reminder['vehicle_id']])];
             }
         }
         $priorities = ['maintenance' => 3, 'conflict' => 0, 'overdue' => 1, 'pickup_late' => 2, 'documents' => 3];
@@ -92,7 +92,7 @@ class Dashboard
         $todayPickups = $bookings->filter(fn ($b) => $b->starts_at->setTimezone('Africa/Algiers')->isSameDay($now))->count() + $rentals->filter(fn ($r) => $r->status === 'draft' && $r->starts_at->setTimezone('Africa/Algiers')->isSameDay($now))->count();
         $todayReturns = $rentals->filter(fn ($r) => $r->status === 'active' && $r->ends_at->setTimezone('Africa/Algiers')->isSameDay($now))->count();
         $money = null;
-        if ($u->permits('finance.manage')) {
+        if ($includeMoney && $u->permits('finance.manage')) {
             $debt = 0;
             $held = 0;
             $credit = 0;

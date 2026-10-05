@@ -65,6 +65,21 @@ class Actions
         });
     }
 
+    public function disableStaff(User $actor, int $id, array $input): User
+    {
+        Gate::forUser($actor)->authorize('staff.manage');
+        $v = Validator::make($input, ['reason' => 'required|string|max:500'])->validate();
+
+        return DB::transaction(function () use ($actor, $id, $v) {
+            DB::table('agency_settings')->where('id', 1)->lockForUpdate()->first();
+            $user = User::lockForUpdate()->findOrFail($id);
+            $result = $this->saveStaff($actor, array_replace($user->only(['name', 'email', 'role']), ['active' => false, 'reason' => $v['reason']]), $id);
+            $this->audit($actor, 'staff.disabled', 'user', $id, null, ['active' => false], $v['reason']);
+
+            return $result;
+        });
+    }
+
     public function preferences(User $actor, array $input): User
     {
         $v = Validator::make(Input::normalize($input), ['locale' => ['required', Rule::in(['fr', 'ar', 'en'])], 'theme' => ['required', Rule::in(['light', 'dark', 'system'])]])->validate();

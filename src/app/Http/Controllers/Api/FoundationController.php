@@ -3,11 +3,30 @@
 namespace App\Http\Controllers\Api;
 
 use App\Modules\Foundation\Actions;
+use App\Modules\Foundation\Notifications;
 use Illuminate\Http\Request;
 
 class FoundationController
 {
     public function __construct(private Actions $actions) {}
+
+    public function disable(Request $r, int $id): mixed
+    {
+        return ['data' => $this->actions->disableStaff($r->user(), $id, $r->all())];
+    }
+
+    public function notifications(Request $r): mixed
+    {
+        return ['data' => app(Notifications::class)->read($r->user())];
+    }
+
+    public function readNotifications(Request $r): mixed
+    {
+        $data = $r->validate(['id' => 'nullable|string|size:64']);
+        app(Notifications::class)->mark($r->user(), $data['id'] ?? null);
+
+        return response()->noContent();
+    }
 
     public function me(Request $r): mixed
     {

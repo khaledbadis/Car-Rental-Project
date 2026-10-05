@@ -10,6 +10,9 @@ use App\Http\Controllers\ReservationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->middleware(['auth:sanctum', 'account', 'throttle:api'])->group(function () {
+    Route::post('staff/{id}/disable', [Api::class, 'disable'])->whereNumber('id');
+    Route::get('notifications', [Api::class, 'notifications']);
+    Route::post('notifications/read', [Api::class, 'readNotifications']);
     Route::get('me', [Api::class, 'me'])->name('api.me');
     Route::patch('me/preferences', [Api::class, 'preferences']);
     Route::put('me/password', [Api::class, 'password'])->name('api.password');

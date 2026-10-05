@@ -1,7 +1,7 @@
 <div wire:poll.60s>
 <div class="flex flex-wrap items-end justify-between gap-5"><div><p class="text-sm font-medium text-teal-700 dark:text-teal-300">{{ __('release.agency_today') }}</p><h1 class="mt-2 text-3xl font-semibold">{{ __('release.dashboard') }}</h1><p class="mt-2 text-sm text-zinc-500">{{ __('release.live_at') }} <bdi>{{ \Carbon\CarbonImmutable::parse($data['as_of'])->setTimezone('Africa/Algiers')->format('d/m/Y H:i') }}</bdi></p></div><a href="{{ route('reservations') }}" class="inline-flex items-center gap-2 rounded-xl bg-teal-700 px-4 py-3 text-sm font-medium text-white"><flux:icon name="calendar-days" class="size-5"/>{{ __('ui.reservations') }}</a></div>
 <div class="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-@foreach(['total'=>'truck','available'=>'check-circle','today_pickups'=>'arrow-up-right','today_returns'=>'arrow-down-left'] as $key=>$icon)
+@foreach(['total'=>'car','available'=>'check-circle','today_pickups'=>'arrow-up-right','today_returns'=>'arrow-down-left'] as $key=>$icon)
 <a href="{{ route($key==='total'?'vehicles.index':($key==='available'?'availability':($key==='today_pickups'?'reservations':'rentals'))) }}" class="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"><div class="flex justify-between gap-3"><span class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('release.'.$key) }}</span><flux:icon :name="$icon" class="size-5 text-teal-600"/></div><p class="mt-3 text-3xl font-semibold tabular-nums">{{ $key==='available'?$data['fleet']['available']:$data[$key] }}</p></a>
 @endforeach
 </div>

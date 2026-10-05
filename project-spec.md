@@ -343,3 +343,14 @@ The ten business decision groups are resolved by Decisions.txt and incorporated 
 ## 10. Definition of done for each phase
 
 A phase is complete when its checklist and acceptance gate pass, relevant web and API behavior is documented, translations and RTL/themes are covered for its screens, authorization/audit requirements are implemented, migrations are repeatable, and no unresolved defect compromises that phase’s core business rules. Record any deferred item explicitly with its destination phase; do not quietly expand or reduce release scope.
+
+## UI refinement — October 2026
+
+- [x] Qualicar Algerie branding and car icon.
+- [x] Profile dropdown with identity, language/appearance switchers and logout.
+- [x] Theme-aware scrollbars and responsive two-column Preferences.
+- [x] Full-width Team list with create/edit modals and audited account deactivation, preserving history.
+- [x] Role-scoped notifications for documents, late rentals/pickups, conflicts and maintenance; per-user daily read state and shared API.
+- [x] Full-width activity list with translated actions and readable before/after changes.
+
+Deployment foundation remains Phase 8; no infrastructure activation is included in this UI pass.
