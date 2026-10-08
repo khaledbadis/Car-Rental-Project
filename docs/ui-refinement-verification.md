@@ -15,3 +15,9 @@ Verification:
 - Browser testing found and corrected missing Team copy, grouped translation lookup returning arrays, and dotted audit action translation keys.
 
 Deployment foundation remains the next planned phase. No VM provisioning or deployment activation performed.
+
+## Vehicles list/card design — 2026-10-07
+
+Applied the supplied images/dashboard-list-list.png and dashboard-list-card.png references to Vehicles only. List is the default on each visit; the toolbar switches immediately to cards without losing filters. Rows/cards display vehicle identity, category, mileage, daily rate and active/archive state (not live rental availability). Existing creation, permissions, links, search, filters and pagination are retained. Customers and Team await owner review before adopting this design.
+
+Verification: 107 PostgreSQL tests / 685 assertions passed; Pint 153 files passed; production assets built. Browser checked both desktop views, live search, light/dark themes, and Arabic mobile layout (390px viewport, no horizontal overflow).

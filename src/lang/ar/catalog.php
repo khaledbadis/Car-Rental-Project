@@ -1,6 +1,13 @@
 <?php
 
 return [
+    'fleet_directory' => 'أسطولك وأسعاره وتفاصيل المركبات.',
+    'search_vehicles' => 'ابحث عن مركبة…',
+    'display' => 'طريقة العرض',
+    'view_list' => 'عرض القائمة',
+    'view_cards' => 'عرض البطاقات',
+    'vehicle_count' => '{0} لا توجد مركبات|{1} مركبة واحدة|[2,*] :count مركبات',
+
     'vehicles' => 'المركبات',
     'customers' => 'العملاء',
     'vehicle' => 'مركبة',

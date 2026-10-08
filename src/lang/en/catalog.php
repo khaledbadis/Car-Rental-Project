@@ -1,6 +1,13 @@
 <?php
 
 return [
+    'fleet_directory' => 'Your fleet, rates and vehicle details.',
+    'search_vehicles' => 'Search vehicles…',
+    'display' => 'Display',
+    'view_list' => 'List view',
+    'view_cards' => 'Card view',
+    'vehicle_count' => '{0} No vehicles|{1} :count vehicle|[2,*] :count vehicles',
+
     'vehicles' => 'Vehicles',
     'customers' => 'Customers',
     'vehicle' => 'Vehicle',

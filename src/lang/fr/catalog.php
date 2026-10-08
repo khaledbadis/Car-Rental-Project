@@ -1,6 +1,13 @@
 <?php
 
 return [
+    'fleet_directory' => 'Votre parc, ses tarifs et ses véhicules.',
+    'search_vehicles' => 'Rechercher un véhicule…',
+    'display' => 'Affichage',
+    'view_list' => 'Vue liste',
+    'view_cards' => 'Vue cartes',
+    'vehicle_count' => '{0} Aucun véhicule|{1} :count véhicule|[2,*] :count véhicules',
+
     'vehicles' => 'Véhicules',
     'customers' => 'Clients',
     'vehicle' => 'Véhicule',
