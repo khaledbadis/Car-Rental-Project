@@ -21,3 +21,16 @@ Deployment foundation remains the next planned phase. No VM provisioning or depl
 Applied the supplied images/dashboard-list-list.png and dashboard-list-card.png references to Vehicles only. List is the default on each visit; the toolbar switches immediately to cards without losing filters. Rows/cards display vehicle identity, category, mileage, daily rate and active/archive state (not live rental availability). Existing creation, permissions, links, search, filters and pagination are retained. Customers and Team await owner review before adopting this design.
 
 Verification: 107 PostgreSQL tests / 685 assertions passed; Pint 153 files passed; production assets built. Browser checked both desktop views, live search, light/dark themes, and Arabic mobile layout (390px viewport, no horizontal overflow).
+
+## Directory design rollout — 2026-10-08
+
+Extended the approved Vehicles pattern to Customers, Team, Reservations, Rentals, Maintenance history, Expenses, and availability results/blocks. List is the default on each visit; the secondary card layout switches locally without a server request. Shared Blade components provide consistent view controls, record links, badges, focus styling and responsive layouts. Activity history uses separated full-width rows. The reservation calendar, reports/charts, profile screens and existing forms retain their purpose-specific layouts.
+
+Business actions, permissions, filters, pagination, outstanding balances, warning messages, evidence links, account modals, block release and expense reversal controls are retained. No schema or API changes.
+
+Verification:
+- Full PostgreSQL suite: 107 tests / 685 assertions passed.
+- Final availability/history adjustments: 30 focused tests / 217 assertions passed (ReservationTest, MaintenanceTest, ReportingTest). Maintenance and expenses tests render populated records in FR/AR/EN.
+- Pint: 153 files passed. Production build passed. Git whitespace check passed.
+- Browser: Customers list/cards, Team cards, reservation list and weekly-calendar switch, Rentals list, Maintenance and Expenses controls/empty states; shared layout checked in light/dark and Arabic at 390px (no horizontal overflow).
+- Local maintenance/expense histories are empty; populated histories were verified by the existing automated suite without adding agency records.

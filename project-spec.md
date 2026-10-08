@@ -354,3 +354,12 @@ A phase is complete when its checklist and acceptance gate pass, relevant web an
 - [x] Full-width activity list with translated actions and readable before/after changes.
 
 Deployment foundation remains Phase 8; no infrastructure activation is included in this UI pass.
+
+### Approved directory design rollout — 8 October 2026
+
+- [x] Extend Vehicles list-first/card-secondary design to Customers, Team, Reservations, Rentals, Maintenance history, Expenses and Availability results/blocks.
+- [x] Align Activity history with separated full-width rows.
+- [x] Preserve existing business actions, access controls, filters, pagination and the reservation calendar.
+- [x] Verify shared layouts in light/dark and Arabic mobile; retain French/Arabic/English text support.
+
+See `docs/ui-refinement-verification.md` for validation evidence. This is a UI refinement, not a new implementation phase.

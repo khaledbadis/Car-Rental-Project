@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'customer_directory' => 'عملاؤك وبيانات الاتصال الخاصة بهم.',
     'fleet_directory' => 'أسطولك وأسعاره وتفاصيل المركبات.',
     'search_vehicles' => 'ابحث عن مركبة…',
     'display' => 'طريقة العرض',

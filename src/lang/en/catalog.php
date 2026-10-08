@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'customer_directory' => 'Your customers and their contact details.',
     'fleet_directory' => 'Your fleet, rates and vehicle details.',
     'search_vehicles' => 'Search vehicles…',
     'display' => 'Display',
